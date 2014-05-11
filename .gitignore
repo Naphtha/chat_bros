@@ -1,5 +1,5 @@
 p2pimtester
 *.pdf
-*.out
+*.o
 p2pim
 .DS_Store
