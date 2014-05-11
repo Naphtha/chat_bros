@@ -1,20 +1,13 @@
+#include "p2pim_tcp.h"
+#include "p2pim_udp.h"
 
-
-
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h> 
 
 
 // avoid namespace issues
 using std::cout;
 using std::endl;
+
+
 
 
 
@@ -63,7 +56,6 @@ int main(int argc, char **argv){
 	cout << external_hosts[1] << endl;
 	cout << external_hosts[2] << endl;
 	cout << external_hosts[3] << endl;
-
 
 	
 
