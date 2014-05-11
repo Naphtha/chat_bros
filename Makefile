@@ -1,4 +1,4 @@
-PARGS=-u steven -u bill -up 5040 -tp 5041 -dt 3 -dm 26
+PARGS=-u steven -u bill -up 5040 -tp 5041 -dt 3 -dm 26 -pp 127.0.0.1:5554 -pp 192.168.0.1:12500
 
 all: retest
 

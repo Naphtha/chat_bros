@@ -45,6 +45,10 @@ int main(int argc, char **argv){
 	cout << arguments[4] << endl;
 	cout << arguments[5] << endl;
 
+	cout << external_hosts[0] << endl;
+	cout << external_hosts[1] << endl;
+	cout << external_hosts[2] << endl;
+	cout << external_hosts[3] << endl;
 
 
 
@@ -61,6 +65,8 @@ int main(int argc, char **argv){
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts){
 
 	// set default arguments and then overwrite them
+
+	unsigned short hosts_index = 0;
 
 	if( getenv("USER") )
 		arguments[0] = getenv("USER");
@@ -95,7 +101,10 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 		}
 		else if( !strcmp(argv[i], "-pp") ){
 			// arguments with -pp 
-			
+			external_hosts[hosts_index] = argv[i+1];
+
+			//increment index
+			hosts_index++;
 		}
 		else{
 			cout << "There was a problem parsing the arguments." << endl;
