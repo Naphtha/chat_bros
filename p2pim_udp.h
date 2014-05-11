@@ -14,7 +14,9 @@
 namespace p2pim_udp
 {
 
-	int discovery(int param);
+
+
+	int message_create(int type, const std::string *params, char *buffer);
 
 
 

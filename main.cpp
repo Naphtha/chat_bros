@@ -1,6 +1,6 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
-
+#include <poll.h>
 
 
 // avoid namespace issues
@@ -9,7 +9,7 @@ using std::endl;
 
 
 
-
+#define BUFFER_SIZE 256
 
 // defaults for program
 const char *DEFAULT_UDP = "50550";
@@ -27,9 +27,17 @@ void signal_handler(int param);
 
 int main(int argc, char **argv){
 
-	std::string username;
+	// set of connections for poll
+	pollfd file_descriptors[16];
+	// arrays of strings for arguments
 	std::string arguments[6];
 	std::string external_hosts[8];
+	// gotten a chat partner
+	bool got_bro = false;
+
+	char udp_packet_buffer[BUFFER_SIZE];
+
+
 
 	if( (argc % 2) != 1){
 		// if flags and arguments dont come in pairs
@@ -57,8 +65,28 @@ int main(int argc, char **argv){
 	cout << external_hosts[2] << endl;
 	cout << external_hosts[3] << endl;
 
-	
 
+	while(1){
+
+		// if no chat partners found
+		if( !got_bro ){
+			// broadcast
+			if( udp::message_create(1, arguments, udp_packet_buffer) ){
+				cout << "Message create failed." << endl;
+				exit(EXIT_SUCCESS);
+			}
+			
+
+		}
+
+
+
+
+
+
+
+
+	}
 
 	return 0;
 }
