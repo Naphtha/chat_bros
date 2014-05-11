@@ -1,21 +1,33 @@
+
+
+
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> 
+
 
 // avoid namespace issues
 using std::cout;
 using std::endl;
 
+
+
 // defaults for program
-const unsigned short DEFAULT_UDP = 50550;
-const unsigned short DEFAULT_TCP = 50551;
-const unsigned short DEFAULT_MIN_TIMEOUT = 5;
-const unsigned short DEFAULT_MAX_TIMEOUT = 60; 
+const char *DEFAULT_UDP = "50550";
+const char *DEFAULT_TCP = "50551";
+const char *DEFAULT_MIN_TIMEOUT = "5";
+const char *DEFAULT_MAX_TIMEOUT = "60"; 
 
 // forward declarations
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts);
 
+void signal_handler(int param);
 
 
 
@@ -33,9 +45,11 @@ int main(int argc, char **argv){
 		exit(0);
 	}
 
-
-
 	parse_arguments(argc, argv, arguments, external_hosts);
+
+	signal(SIGTERM, signal_handler);
+    signal(SIGINT, signal_handler);
+    signal(SIGUSR1, signal_handler);
 
 
 	cout << arguments[0] << endl;
@@ -51,22 +65,23 @@ int main(int argc, char **argv){
 	cout << external_hosts[3] << endl;
 
 
-
-	cout << "Hello World" << endl;
 	
-
-	username = getenv("USER");
 
 
 	return 0;
 }
 
+void signal_handler(int param){
+	cout << "Caught signal " << param << endl;
+    exit(EXIT_SUCCESS);
+}
+
 
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts){
 
-	// set default arguments and then overwrite them
+	unsigned char hosts_index = 0;
 
-	unsigned short hosts_index = 0;
+	// set default arguments and then overwrite them
 
 	if( getenv("USER") )
 		arguments[0] = getenv("USER");
@@ -74,6 +89,11 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 		cout << "Problem getting Username from environment.";
 		exit(0);
 	}
+
+	arguments[1] = DEFAULT_UDP;
+	arguments[2] = DEFAULT_TCP;
+	arguments[3] = DEFAULT_MIN_TIMEOUT;
+	arguments[4] = DEFAULT_MAX_TIMEOUT;
 
 
 	for( int i = 1; i < argc; i+=2 ){
@@ -100,23 +120,15 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 			arguments[4] = argv[i+1];
 		}
 		else if( !strcmp(argv[i], "-pp") ){
-			// arguments with -pp 
+			// arguments with -pp stored in external_hosts
 			external_hosts[hosts_index] = argv[i+1];
-
 			//increment index
 			hosts_index++;
 		}
 		else{
 			cout << "There was a problem parsing the arguments." << endl;
 		}
-
-
 	}
-
-
-
-
-
 	return;
 };
 
