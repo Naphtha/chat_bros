@@ -23,16 +23,27 @@ void signal_handler(int param);
 
 int main(int argc, char **argv){
 
-	// set of connections for poll
-	pollfd file_descriptors[16];
 	// arrays of strings for arguments
 	std::string arguments[6];
 	std::string external_hosts[8];
+
+	// packet buffers and lengths
+	char udp_packet_buffer[BUFFER_SIZE];
+	int udp_buffer_size;
+	char tcp_packet_buffer[BUFFER_SIZE];
+	int tcp_buffer_size;
+
+	// set of connections for poll
+	pollfd file_descriptors[16];
+	int udp_socket_fd;
+
+	// server address
+	sockaddr_in server_address;
+	
 	// gotten a chat partner
 	bool got_bro = false;
-
-	char udp_packet_buffer[BUFFER_SIZE];
-
+	// check for message sendto success
+	int send_check;
 
 
 	if( (argc % 2) != 1){
@@ -61,7 +72,9 @@ int main(int argc, char **argv){
 	// cout << external_hosts[2] << endl;
 	// cout << external_hosts[3] << endl;
 
-	udp::initialize(arguments);
+
+
+	udp::do_something(arguments, &server_address, &udp_socket_fd);
 
 
 	while(1){
@@ -69,10 +82,26 @@ int main(int argc, char **argv){
 		// if no chat partners found
 		if( !got_bro ){
 			// broadcast
-			if( udp::message_create(1, arguments, udp_packet_buffer) ){
+			if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
 				cout << "Message create failed." << endl;
 				exit(EXIT_SUCCESS);
 			}
+			send_check = sendto(udp_socket_fd, udp_packet_buffer, 32,
+				   0, (sockaddr *)&server_address, sizeof(server_address));
+			if(send_check < 0){
+				cout << "Error in message send." << endl;
+				exit(0);
+			}
+
+			cout << "Should have broadcasted." << endl;
+			sleep(5);
+
+        // Result = sendto(SocketFileDescriptor, Buffer, strlen(Buffer), 0,
+        //					 (struct sockaddr *)&ServerAddress, sizeof(ServerAddress));
+        // if(0 > Result){ 
+        //     error("ERROR sending to server");
+        // }
+
 
 		}
 

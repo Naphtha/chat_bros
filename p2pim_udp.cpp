@@ -1,10 +1,11 @@
 #include "p2pim_udp.h"
+
 // for debugging purposes
 #include <bitset>
 
 // returns 0 on success
 
-int udp::message_create(short type, const std::string *params, char *buffer){
+int udp::message_create(short type, const std::string *params, char *buffer, int *buffer_size){
 
 	// initialize default packet structure
 
@@ -59,36 +60,53 @@ int udp::message_create(short type, const std::string *params, char *buffer){
 
 	buffer[buffer_index++] = '\0';
 
+	*buffer_size = buffer_index - 1;
+
 	// successful return
 	return 0;
 }
 
 
 
-int initialize(std::string *args){
+void udp::do_something(std::string *args, sockaddr_in *server_address, int *socket_file_descriptor){
 
-	int socket_file_descriptor;
 	int result;
 	int broadcast_enable;
+	int port_number;
 
-    socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+
+
+    *socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(0 > socket_file_descriptor){
         std::cout << "Error opening socket" << std::endl;
     }
-    
+
+
+
+
     // Set UDP socket to enable broadcast
     broadcast_enable = 1;
-    result = setsockopt(socket_file_descriptor, SOL_SOCKET, SO_BROADCAST,
+    result = setsockopt(*socket_file_descriptor, SOL_SOCKET, SO_BROADCAST,
     					&broadcast_enable, sizeof(broadcast_enable));
     if(0 > result){
-        close(socket_file_descriptor);
+        close(*socket_file_descriptor);
         std::cout << "Error setting socket option." << std::endl;
     }
 
+    port_number = atoi( args[1].c_str() );
 
 
 
-	return socket_file_descriptor;
+    bzero((char *) server_address, sizeof(*server_address));
+
+    server_address->sin_family = AF_INET;
+    server_address->sin_addr.s_addr = htonl(INADDR_BROADCAST);
+    server_address->sin_port = htons(port_number);
+
+
+
+    return;
 }
 
 

@@ -1,9 +1,9 @@
-PARGS=-u steven
+PARGS=-u steveener
 
 all: retest
 
-p2pim: main.o p2pim_udp.o p2pim_tcp.o
-	g++ main.o p2pim_udp.o p2pim_tcp.o -o p2pim
+p2pim: main.o p2pim_udp.o
+	g++ main.o p2pim_udp.o -o p2pim
 
 
 
