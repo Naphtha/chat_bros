@@ -1,13 +1,9 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
-#include <poll.h>
-
 
 // avoid namespace issues
 using std::cout;
 using std::endl;
-
-
 
 #define BUFFER_SIZE 256
 
@@ -53,17 +49,19 @@ int main(int argc, char **argv){
     signal(SIGUSR1, signal_handler);
 
 
-	cout << arguments[0] << endl;
-	cout << arguments[1] << endl;
-	cout << arguments[2] << endl;
-	cout << arguments[3] << endl;
-	cout << arguments[4] << endl;
-	cout << arguments[5] << endl;
+	// cout << arguments[0] << endl;
+	// cout << arguments[1] << endl;
+	// cout << arguments[2] << endl;
+	// cout << arguments[3] << endl;
+	// cout << arguments[4] << endl;
+	// cout << arguments[5] << endl;
 
-	cout << external_hosts[0] << endl;
-	cout << external_hosts[1] << endl;
-	cout << external_hosts[2] << endl;
-	cout << external_hosts[3] << endl;
+	// cout << external_hosts[0] << endl;
+	// cout << external_hosts[1] << endl;
+	// cout << external_hosts[2] << endl;
+	// cout << external_hosts[3] << endl;
+
+	udp::initialize(file_descriptors, arguments);
 
 
 	while(1){
@@ -75,7 +73,6 @@ int main(int argc, char **argv){
 				cout << "Message create failed." << endl;
 				exit(EXIT_SUCCESS);
 			}
-			
 
 		}
 
@@ -87,6 +84,11 @@ int main(int argc, char **argv){
 
 
 	}
+
+
+
+
+
 
 	return 0;
 }

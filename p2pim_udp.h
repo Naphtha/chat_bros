@@ -10,13 +10,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> 
+#include <poll.h>
+
 
 namespace p2pim_udp
 {
 
 
+	int initialize(pollfd *file_descriptors, std::string *args);
 
-	int message_create(int type, const std::string *params, char *buffer);
+	int message_create(short type, const std::string *params, char *buffer);
 
 
 
