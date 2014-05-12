@@ -3,7 +3,7 @@ PARGS=-u steveener -pp 127.0.0.1:50550
 all: retest
 
 p2pim: p2pim_udp.o p2pim_tcp.o main.o
-	g++ main.o p2pim_udp.o -o p2pim
+	g++ main.o p2pim_udp.o p2pim_tcp.o -o p2pim
 
 
 

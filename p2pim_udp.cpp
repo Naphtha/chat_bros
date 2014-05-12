@@ -69,7 +69,7 @@ int udp::message_create(short type, const std::string *params, char *buffer, int
 
 
 void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket_file_descriptor,
-					 nfds_t *num_fds, pollfd *file_descriptors){
+					 pollfd *file_descriptors){
 
 	int result;
 	int broadcast_enable;
@@ -79,7 +79,7 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
 
     *socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(0 > *socket_file_descriptor){
-        std::cout << "Error opening socket" << std::endl;
+        perror("Error opening socket");
     }
 
 
@@ -97,7 +97,7 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     					&port_reuse_enable, sizeof(port_reuse_enable));
     if(0 > result){
         close(*socket_file_descriptor);
-        std::cout << "Error setting socket option." << std::endl;
+        perror("Error setting socket option.");
     }
 
     port_number = atoi( args[1].c_str() );
@@ -110,7 +110,6 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     server_address->sin_port = htons(port_number);
 
     if(0 > bind(*socket_file_descriptor, (struct sockaddr *)server_address, sizeof(*server_address))){ 
-        std::cout << "Error binding socket." << std::endl;
         perror("Error binding socket: ");
     }
 
@@ -118,13 +117,10 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
 
     file_descriptors[0].fd = *socket_file_descriptor;
 
-    (*num_fds)++;
 
 
     return;
 }
-
-
 
 
 

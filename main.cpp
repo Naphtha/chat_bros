@@ -1,6 +1,7 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
 
+
 // avoid namespace issues
 using std::cout;
 using std::endl;
@@ -18,6 +19,7 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 
 void signal_handler(int param);
 
+long parse_ip(std::string the_ip_string);
 
 
 
@@ -26,6 +28,7 @@ int main(int argc, char **argv){
 	// arrays of strings for arguments
 	std::string arguments[6];
 	std::string external_hosts[8];
+	sockaddr_in external_addresses[8];
 	int num_extern_hosts = 0;
 
 	// packet buffers and lengths
@@ -38,10 +41,12 @@ int main(int argc, char **argv){
 	pollfd file_descriptors[32];
 	nfds_t num_fds = 0;
 	int udp_socket_fd;
+	int tcp_socket_fd;
 
 
 	// server address
-	sockaddr_in server_address;
+	sockaddr_in udp_server_address;
+	sockaddr_in tcp_server_address;
 	
 	// gotten a chat partner
 	bool got_bro = false;
@@ -49,6 +54,7 @@ int main(int argc, char **argv){
 	int send_check;
 
 	int timeout_val;
+	std::string temp_string;
 
 
 	if( (argc % 2) != 1){
@@ -59,6 +65,8 @@ int main(int argc, char **argv){
 	}
 
 	parse_arguments(argc, argv, arguments, external_hosts, &num_extern_hosts);
+
+	timeout_val = atoi( arguments[3].c_str() );
 
 	signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
@@ -78,7 +86,42 @@ int main(int argc, char **argv){
 	cout << num_extern_hosts << endl;
 
 
-	udp::initialize(arguments, &server_address, &udp_socket_fd, &num_fds, file_descriptors);
+	udp::initialize(arguments, &udp_server_address, &udp_socket_fd, file_descriptors);
+	num_fds++;
+	tcp::initialize(arguments, &tcp_server_address, &tcp_socket_fd, file_descriptors);
+	num_fds++;
+
+	// parse args and place into external_hosts array
+	for( int i = 0; i < num_extern_hosts; i++){
+		// set ipv4
+		external_addresses[i].sin_family = AF_INET;
+		// slice out ip address
+		temp_string = external_hosts[i].substr( 0, external_hosts[i].find(":") );
+		// parse ip and place into s_addr
+		external_addresses[i].sin_addr.s_addr = htonl( parse_ip(temp_string) );
+		// slice out port number
+		temp_string = external_hosts[i].substr( external_hosts[i].find(":") + 1, external_hosts[i].length() );
+		// place port number into sin_port
+		external_addresses[i].sin_port = htons(atoi(temp_string.c_str()));
+	}
+
+	// code to send to each external address
+	for(int i = 0; i < num_extern_hosts; i++){
+		// allocate udp_packet
+		if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
+			cout << "Message create failed." << endl;
+			exit(EXIT_SUCCESS);
+		}
+		// send udp packet 
+		send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+			   0, (sockaddr *)&(external_addresses[i]), sizeof(external_addresses[i]));
+		if(send_check < 0){
+			cout << "Error in message send." << endl;
+			exit(0);
+		}
+		cout << "sent a message to external host" << endl;
+	}
+
 
 
 	while(1){
@@ -91,16 +134,16 @@ int main(int argc, char **argv){
 				exit(EXIT_SUCCESS);
 			}
 			send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
-				   0, (sockaddr *)&server_address, sizeof(server_address));
+				   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 			if(send_check < 0){
 				cout << "Error in message send." << endl;
 				exit(0);
 			}
 
-			cout << "Should have broadcasted." << endl;
+			cout << "Broadcasted." << endl;
 		}
 
-		poll(file_descriptors, num_fds, 1);
+		poll(file_descriptors, num_fds, timeout_val * 1000);
 
 
 
@@ -185,7 +228,23 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 };
 
 
+long parse_ip(std::string the_ip_string){
 
+	std::string delim = ".";
+	size_t pos;
+	long ip_bits = 0;
+
+	while ((pos = the_ip_string.find(delim)) != std::string::npos) {
+	    ip_bits += atoi( (the_ip_string.substr(0, pos)).c_str() );
+	    the_ip_string.erase(0, pos + delim.length());
+	    ip_bits <<= 8;
+	}
+
+	ip_bits += atoi( (the_ip_string.substr(0, pos)).c_str() );
+    // std::cout << std::hex << ip_bits << std::endl;
+
+	return ip_bits;
+}
 
 
 
