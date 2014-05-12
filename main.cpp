@@ -61,7 +61,7 @@ int main(int argc, char **argv){
 	// cout << external_hosts[2] << endl;
 	// cout << external_hosts[3] << endl;
 
-	udp::initialize(file_descriptors, arguments);
+	udp::initialize(arguments);
 
 
 	while(1){

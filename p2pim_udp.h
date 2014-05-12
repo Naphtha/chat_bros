@@ -17,7 +17,7 @@ namespace p2pim_udp
 {
 
 
-	int initialize(pollfd *file_descriptors, std::string *args);
+	int initialize(std::string *args);
 
 	int message_create(short type, const std::string *params, char *buffer);
 

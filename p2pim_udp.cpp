@@ -65,11 +65,30 @@ int udp::message_create(short type, const std::string *params, char *buffer){
 
 
 
-int initialize(pollfd *file_descriptors, std::string *args){
+int initialize(std::string *args){
+
+	int socket_file_descriptor;
+	int result;
+	int broadcast_enable;
+
+    socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(0 > socket_file_descriptor){
+        std::cout << "Error opening socket" << std::endl;
+    }
+    
+    // Set UDP socket to enable broadcast
+    broadcast_enable = 1;
+    result = setsockopt(socket_file_descriptor, SOL_SOCKET, SO_BROADCAST,
+    					&broadcast_enable, sizeof(broadcast_enable));
+    if(0 > result){
+        close(socket_file_descriptor);
+        std::cout << "Error setting socket option." << std::endl;
+    }
 
 
 
-	return 0;
+
+	return socket_file_descriptor;
 }
 
 
