@@ -4,7 +4,8 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
+#include <signal.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -22,7 +23,8 @@ namespace p2pim_udp
 
 
 
-	void do_something(std::string *args, sockaddr_in *server_address, int *socket_file_descriptor);
+	void initialize(std::string *args, sockaddr_in *server_address, int *socket_file_descriptor,
+					nfds_t *num_fds, pollfd *file_descriptors);
 
 
 

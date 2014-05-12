@@ -1,8 +1,8 @@
-PARGS=-u steveener
+PARGS=-u steveener -pp 127.0.0.1:50550
 
 all: retest
 
-p2pim: main.o p2pim_udp.o
+p2pim: p2pim_udp.o p2pim_tcp.o main.o
 	g++ main.o p2pim_udp.o -o p2pim
 
 
@@ -29,5 +29,7 @@ run:
 retest:
 	make clean
 	make p2pim
-	@echo "\n===========================\n"
+	@echo " "
+	@echo "==========================="
+	@echo " "
 	./p2pim $(PARGS)
