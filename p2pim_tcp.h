@@ -21,7 +21,9 @@ namespace p2pim_tcp
 	void initialize(std::string *args, sockaddr_in *server_address, int *socket_file_descriptor,
 					pollfd *file_descriptors);
 
-
+	// message create for generic functions
+	// creates messages 04, 05, 06, 07, 0A
+	int messsage_create(short type, std::string *params, char *buffer, int *buffer_size);
 
 
 

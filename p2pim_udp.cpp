@@ -54,6 +54,7 @@ int udp::message_create(short type, std::string *params, char *buffer, int *buff
 
 	buffer[buffer_index++] = '\0';
 
+
 	for( int i = 0; i < params[0].length(); i++ ){
 		buffer[buffer_index++] = params[0][i];
 	}

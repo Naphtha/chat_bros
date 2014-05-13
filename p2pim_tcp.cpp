@@ -14,7 +14,6 @@ void tcp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     port_number = atoi( args[2].c_str() );
 
 
-
     bzero((char *) server_address, sizeof(*server_address));
 
     server_address->sin_family = AF_INET;
@@ -30,15 +29,42 @@ void tcp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     file_descriptors[1].fd = *socket_file_descriptor;
     file_descriptors[1].events = POLLIN;
 
-
-
-
-
     return;
 }
 
 
 
+int tcp::messsage_create(short type, std::string *params, char *buffer, int *buffer_size){
+
+	int buffer_index = 6;
+
+	bzero( buffer, sizeof(buffer) );
+
+	buffer[0] = 'P';
+	buffer[1] = '2';
+	buffer[2] = 'P';
+	buffer[3] = 'I';
+	buffer[4] = 0x00;
+	buffer[5] = type;
+
+
+	if(0x04 == type){
+		for( int i = 0; i < params[0].length(); i++ ){
+			buffer[buffer_index++] = params[0][i];
+		}
+
+		buffer[buffer_index++] = '\0';
+
+		*buffer_size = buffer_index - 1;
+	}
+	else{
+
+		*buffer_size = buffer_index;
+	}
+
+	return 0;
+
+}
 
 
 
