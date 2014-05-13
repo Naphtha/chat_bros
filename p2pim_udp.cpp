@@ -83,7 +83,10 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     }
 
 
-    // Set UDP socket to enable broadcast
+    // Set UDP socket options
+    // broadcast
+    // reuseaddr
+    // reuseport
     broadcast_enable = 1;
     result = setsockopt(*socket_file_descriptor, SOL_SOCKET, SO_BROADCAST,
     					&broadcast_enable, sizeof(broadcast_enable));
@@ -100,21 +103,22 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
         perror("Error setting socket option.");
     }
 
+    // get port from args
     port_number = atoi( args[1].c_str() );
 
-
+    // clean out server address
     bzero((char *) server_address, sizeof(*server_address));
-
+    // set address values
     server_address->sin_family = AF_INET;
     server_address->sin_addr.s_addr = htonl(INADDR_BROADCAST);
     server_address->sin_port = htons(port_number);
 
+    // bind sockets
     if(0 > bind(*socket_file_descriptor, (struct sockaddr *)server_address, sizeof(*server_address))){ 
         perror("Error binding socket: ");
     }
 
-
-
+    // add to filedescriptor array
     file_descriptors[0].fd = *socket_file_descriptor;
     file_descriptors[0].events = POLLIN;
 

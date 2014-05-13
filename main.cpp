@@ -8,6 +8,7 @@ using std::cout;
 using std::endl;
 
 #define BUFFER_SIZE 256
+#define MAX_CLIENTS 32
 
 // defaults for program
 const char *DEFAULT_UDP = "50550";
@@ -41,7 +42,9 @@ int main(int argc, char **argv){
 	int tcp_buffer_size;
 
 	// set of connections for poll
-	pollfd file_descriptors[32];
+	// 3 is min number of sockets required for operation
+	// 0 is udp, 1 is tcp, 2 is STDINN
+	pollfd file_descriptors[MAX_CLIENTS + 3];
 	nfds_t num_fds = 0;
 	int udp_socket_fd;
 	int tcp_socket_fd;
@@ -56,11 +59,15 @@ int main(int argc, char **argv){
 	// address lengths
 	socklen_t udp_client_length;
 	socklen_t tcp_client_length;
+
+	// connected clients
+	std::string connected_clients[MAX_CLIENTS];
 	
 	// check for message sendto success
 	int send_check;
 
 	int timeout_val;
+	// temp_string used for swapping strings around
 	std::string temp_string;
 
 
@@ -160,7 +167,6 @@ int main(int argc, char **argv){
 	while(1){
 
 		// if timeout
-		cout << "Starting another poll with timeout value " << timeout_val << endl;
 		if( (poll_return = poll(file_descriptors, num_fds, timeout_val * 1000) ) == 0){
 
 			cout << "Poll timed out." << endl;
@@ -187,7 +193,7 @@ int main(int argc, char **argv){
 		}
 		else{
 			
-			cout << "The poll return value was: " << poll_return << endl;
+			// cout << "The poll return value was: " << poll_return << endl;
 
 			// first file descriptor is always udp socket
 			// if we receive something on the udp socket
@@ -253,7 +259,7 @@ int main(int argc, char **argv){
 				}
 				// l caught, list clients
 				if( 'l' == rx_char){
-
+					cout << "List of clients: " << endl;
 				}
 
 
@@ -264,7 +270,6 @@ int main(int argc, char **argv){
 
 
 
-			cout << "End of poll else block." << endl;
 
 			for( int i = 0; i < 32; i++ ){
 				if(file_descriptors[i].revents == POLLERR){
@@ -343,7 +348,7 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
     }
     strcpy(name, LocalHostEntry->h_name);
 
-    for( int i = 0; i < strlen(name); i++ ){
+    for( unsigned int i = 0; i < strlen(name); i++ ){
     	arguments[5].push_back(name[i]);
     }
 
