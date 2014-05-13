@@ -5,7 +5,7 @@
 
 // returns 0 on success
 
-int udp::message_create(short type, const std::string *params, char *buffer, int *buffer_size){
+int udp::message_create(short type, std::string *params, char *buffer, int *buffer_size){
 
 	// initialize default packet structure
 
@@ -116,6 +116,7 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
 
 
     file_descriptors[0].fd = *socket_file_descriptor;
+    file_descriptors[0].events = POLLIN;
 
 
 

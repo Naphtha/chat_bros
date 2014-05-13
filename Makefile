@@ -1,4 +1,4 @@
-PARGS=-u steveener -pp 127.0.0.1:50550
+PARGS=-u steveener
 
 all: retest
 

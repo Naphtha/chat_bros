@@ -24,7 +24,7 @@ namespace p2pim_udp
 					pollfd *file_descriptors);
 
 	// creates a udp message for sending
-	int message_create(short type, const std::string *params, char *buffer, int *buffer_size);
+	int message_create(short type, std::string *params, char *buffer, int *buffer_size);
 
 
 

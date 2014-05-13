@@ -22,11 +22,12 @@ void tcp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     server_address->sin_port = htons(port_number);
 
     if(0 > bind(*socket_file_descriptor, (struct sockaddr *)server_address, sizeof(*server_address))){ 
-        perror("Error binding socket: ");
+        perror("Error binding TCP socket: ");
     }
 
 
     file_descriptors[1].fd = *socket_file_descriptor;
+    file_descriptors[1].events = POLLIN;
 
 
 

@@ -47,6 +47,12 @@ int main(int argc, char **argv){
 	// server address
 	sockaddr_in udp_server_address;
 	sockaddr_in tcp_server_address;
+	// client address
+	sockaddr_in udp_client_address;
+	sockaddr_in tcp_client_address;
+	// address lengths
+	socklen_t udp_client_length;
+	socklen_t tcp_client_length;
 	
 	// gotten a chat partner
 	bool got_bro = false;
@@ -91,6 +97,8 @@ int main(int argc, char **argv){
 	tcp::initialize(arguments, &tcp_server_address, &tcp_socket_fd, file_descriptors);
 	num_fds++;
 
+
+
 	// parse args and place into external_hosts array
 	for( int i = 0; i < num_extern_hosts; i++){
 		// set ipv4
@@ -124,6 +132,7 @@ int main(int argc, char **argv){
 
 
 
+
 	while(1){
 
 		// if no chat partners found
@@ -143,13 +152,59 @@ int main(int argc, char **argv){
 			cout << "Broadcasted." << endl;
 		}
 
-		poll(file_descriptors, num_fds, timeout_val * 1000);
+		if( poll(file_descriptors, num_fds, timeout_val * 1000) == 0){
+
+			if( (timeout_val * 2) <= atoi(arguments[4].c_str()) ){
+				timeout_val *= 2;
+				continue;
+			}
+			else{
+				timeout_val = atoi(arguments[4].c_str());
+				continue;
+			}
+
+
+		}
+		else{
+			
+			// first file descriptor is always udp socket
+			// if we receive something on the udp socket
+			if(file_descriptors[0].revents == POLLIN){
+
+				udp_client_length = sizeof(udp_client_address);
+
+				recvfrom(file_descriptors[0].fd, udp_packet_buffer, BUFFER_SIZE, 0,
+						 (sockaddr *)&udp_client_address, &udp_client_length );
+
+				// if packet came from us, ignore it
+
+				// cout << &(udp_packet_buffer[10]) << endl;
+
+
+
+			}
 
 
 
 
 
-		break;
+		for( int i = 0; i < num_fds; i++ ){
+			if(file_descriptors[i].revents == POLLIN){
+				cout << "Caught a POLLIN Event at fd # " << file_descriptors[i].fd << endl;
+				file_descriptors[i].revents = 0;
+			}
+		}
+
+
+
+		}
+
+
+
+
+
+
+
 	}
 
 
@@ -173,6 +228,9 @@ void signal_handler(int param){
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts, int *num_hosts){
 
 	unsigned char hosts_index = 0;
+	char Buffer[BUFFER_SIZE];
+	char name[BUFFER_SIZE];
+    struct hostent *LocalHostEntry;
 
 	// set default arguments and then overwrite them
 
@@ -187,6 +245,21 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 	arguments[2] = DEFAULT_TCP;
 	arguments[3] = DEFAULT_MIN_TIMEOUT;
 	arguments[4] = DEFAULT_MAX_TIMEOUT;
+
+    if(-1 == gethostname(Buffer, 255)){
+    	perror("Hostname get failed.");
+    	exit(0);
+    }
+    LocalHostEntry = gethostbyname(Buffer);
+    if(NULL == LocalHostEntry){
+    	perror("Hostname get failed.");
+    	exit(0);
+    }
+    strcpy(name, LocalHostEntry->h_name);
+
+    for( int i = 0; i < strlen(name); i++ ){
+    	arguments[5].push_back(name[i]);
+    }
 
 
 	for( int i = 1; i < argc; i+=2 ){
