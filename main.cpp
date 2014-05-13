@@ -42,7 +42,7 @@ int main(int argc, char **argv){
 	nfds_t num_fds = 0;
 	int udp_socket_fd;
 	int tcp_socket_fd;
-
+	int poll_return = 0;
 
 	// server address
 	sockaddr_in udp_server_address;
@@ -54,8 +54,6 @@ int main(int argc, char **argv){
 	socklen_t udp_client_length;
 	socklen_t tcp_client_length;
 	
-	// gotten a chat partner
-	bool got_bro = false;
 	// check for message sendto success
 	int send_check;
 
@@ -74,9 +72,12 @@ int main(int argc, char **argv){
 
 	timeout_val = atoi( arguments[3].c_str() );
 
+	bzero(file_descriptors, sizeof(file_descriptors));
+
 	signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
     signal(SIGUSR1, signal_handler);
+
 
 
 	cout << arguments[0] << endl;
@@ -131,12 +132,35 @@ int main(int argc, char **argv){
 	}
 
 
+	// broadcast
+	if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
+		cout << "Message create failed." << endl;
+		exit(EXIT_SUCCESS);
+	}
+	send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
+	if(send_check < 0){
+		perror("Error in message send.");
+		exit(0);
+	}
+
+	cout << "Broadcasted." << endl;
+
 
 
 	while(1){
 
-		// if no chat partners found
-		if( !got_bro ){
+		// if timeout
+		cout << "Starting another poll with timeout value " << timeout_val << endl;
+		if( (poll_return = poll(file_descriptors, num_fds, timeout_val * 1000) ) == 0){
+
+			cout << "Poll timed out." << endl;
+			// set new timeout val
+			timeout_val *= 2;
+			if( timeout_val  > atoi(arguments[4].c_str()) ){
+				timeout_val = atoi(arguments[4].c_str());
+			}
+
 			// broadcast
 			if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
 				cout << "Message create failed." << endl;
@@ -145,31 +169,23 @@ int main(int argc, char **argv){
 			send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
 				   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 			if(send_check < 0){
-				cout << "Error in message send." << endl;
+				perror("Error in message send.");
 				exit(0);
 			}
-
 			cout << "Broadcasted." << endl;
-		}
 
-		if( poll(file_descriptors, num_fds, timeout_val * 1000) == 0){
-
-			if( (timeout_val * 2) <= atoi(arguments[4].c_str()) ){
-				timeout_val *= 2;
-				continue;
-			}
-			else{
-				timeout_val = atoi(arguments[4].c_str());
-				continue;
-			}
-
-
+			
 		}
 		else{
 			
+			cout << "The poll return value was: " << poll_return << endl;
+
 			// first file descriptor is always udp socket
 			// if we receive something on the udp socket
 			if(file_descriptors[0].revents == POLLIN){
+
+
+				cout << "Recieved a UDP message." << endl;
 
 				udp_client_length = sizeof(udp_client_address);
 
@@ -177,23 +193,58 @@ int main(int argc, char **argv){
 						 (sockaddr *)&udp_client_address, &udp_client_length );
 
 				// if packet came from us, ignore it
+				if( !strcmp(&(udp_packet_buffer[10]), arguments[5].c_str()) ){
+					cout << "Received self broadcast." << endl;
+					continue;
+				}
 
-				// cout << &(udp_packet_buffer[10]) << endl;
+				// if packet is discovery, reply
+				if( udp_packet_buffer[5] == 0x01){
+					// craft a discovery message using 2 as arg
+					cout << "Receieved broadcast from " << &(udp_packet_buffer[10]) << endl;
+
+					udp::message_create(2, arguments, udp_packet_buffer, &udp_buffer_size);
+					send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+						   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
+					if(send_check < 0){
+						perror("Error in message send.");
+						exit(0);
+					}
+				}
+
+				// if packet is reply
+				if( udp_packet_buffer[5] == 0x02){
+
+					cout << "Receieved reply message from " << &(udp_packet_buffer[10]) << endl;
+				}
+
+				// if packet is close
+				if( udp_packet_buffer[5] == 0x03 ){
+
+					cout << "Receieved closing message from " << &(udp_packet_buffer[10]) << endl;
+				}
+			} // end of udp revents
 
 
+
+			if(file_descriptors[1].revents == POLLIN){
+
+				cout << "Receieved a TCP message." << endl;
 
 			}
 
 
+			cout << "End of poll else block." << endl;
 
 
-
-		for( int i = 0; i < num_fds; i++ ){
-			if(file_descriptors[i].revents == POLLIN){
-				cout << "Caught a POLLIN Event at fd # " << file_descriptors[i].fd << endl;
-				file_descriptors[i].revents = 0;
+			for( int i = 0; i < 32; i++ ){
+				if(file_descriptors[i].revents == POLLERR){
+					cout << "Caught a POLLERR on " << i << endl;
+				}
+				if(file_descriptors[i].revents == POLLHUP){
+					cout << "Caught a POLLHUP on " << i << endl;
+				}
 			}
-		}
 
 
 
@@ -208,8 +259,16 @@ int main(int argc, char **argv){
 	}
 
 
+	// broadcast closing message
+	udp::message_create(3, arguments, udp_packet_buffer, &udp_buffer_size);
+	send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
+	if(send_check < 0){
+		perror("Error in message send.");
+		exit(0);
+	}
 
-
+	// close socket file descriptors
 	for(unsigned int i = 0; i < num_fds; i++ ){
 		cout << "Closing FD # " << file_descriptors[i].fd << endl;
 		close(file_descriptors[i].fd);

@@ -18,13 +18,14 @@ void tcp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     bzero((char *) server_address, sizeof(*server_address));
 
     server_address->sin_family = AF_INET;
-    server_address->sin_addr.s_addr = htonl(INADDR_ANY);
+    server_address->sin_addr.s_addr = INADDR_ANY;
     server_address->sin_port = htons(port_number);
 
     if(0 > bind(*socket_file_descriptor, (struct sockaddr *)server_address, sizeof(*server_address))){ 
         perror("Error binding TCP socket: ");
     }
 
+    listen(*socket_file_descriptor, 5);
 
     file_descriptors[1].fd = *socket_file_descriptor;
     file_descriptors[1].events = POLLIN;
