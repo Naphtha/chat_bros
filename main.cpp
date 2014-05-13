@@ -16,12 +16,22 @@ const char *DEFAULT_TCP = "50551";
 const char *DEFAULT_MIN_TIMEOUT = "5";
 const char *DEFAULT_MAX_TIMEOUT = "60"; 
 
+// struct for keeping track of userlist
+struct user_info{
+	int TCP_port;
+	std::string username;
+	std::string hostname;
+};
+
 // forward declarations
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts, int *num_hosts);
 void signal_handler(int param);
 long parse_ip(std::string the_ip_string);
 void set_noncanonical_mode(int fd, struct termios *savedattributes);
 void reset_noncanonical_mode(int fd, struct termios *savedattributes);
+void add_discovered_user( char *packet_buffer , user_info *user_list, int num_users);
+
+
 
 int main(int argc, char **argv){
 
@@ -61,7 +71,8 @@ int main(int argc, char **argv){
 	socklen_t tcp_client_length;
 
 	// connected clients
-	std::string connected_clients[MAX_CLIENTS];
+	user_info connected_clients[MAX_CLIENTS];
+	int num_users;
 	
 	// check for message sendto success
 	int send_check;
@@ -160,7 +171,7 @@ int main(int argc, char **argv){
 		exit(0);
 	}
 
-	cout << "Broadcasted." << endl;
+	// cout << "Broadcasted." << endl;
 
 
 
@@ -169,7 +180,7 @@ int main(int argc, char **argv){
 		// if timeout
 		if( (poll_return = poll(file_descriptors, num_fds, timeout_val * 1000) ) == 0){
 
-			cout << "Poll timed out." << endl;
+			cout << "Poll timed out with value " << timeout_val << endl;
 			// set new timeout val
 			timeout_val *= 2;
 			if( timeout_val  > atoi(arguments[4].c_str()) ){
@@ -187,7 +198,7 @@ int main(int argc, char **argv){
 				perror("Error in message send.");
 				exit(0);
 			}
-			cout << "Broadcasted." << endl;
+			// cout << "Broadcasted." << endl;
 
 			
 		}
@@ -199,8 +210,6 @@ int main(int argc, char **argv){
 			// if we receive something on the udp socket
 			if(file_descriptors[0].revents == POLLIN){
 
-
-				cout << "Recieved a UDP message." << endl;
 
 				udp_client_length = sizeof(udp_client_address);
 
@@ -217,6 +226,8 @@ int main(int argc, char **argv){
 				if( udp_packet_buffer[5] == 0x01){
 					// craft a discovery message using 2 as arg
 					cout << "Receieved broadcast from " << &(udp_packet_buffer[10]) << endl;
+
+
 
 					udp::message_create(2, arguments, udp_packet_buffer, &udp_buffer_size);
 					send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
@@ -241,12 +252,16 @@ int main(int argc, char **argv){
 			} // end of udp revents
 
 
-
+			// if tcp file descriptor recieves stuff
 			if(file_descriptors[1].revents == POLLIN){
 
 				cout << "Receieved a TCP message." << endl;
+				break;
 
-			}
+
+
+
+			} // end of tcp revents
 
 
 			// if STDIN recieves a key
@@ -309,6 +324,14 @@ int main(int argc, char **argv){
 
 	return 0;
 }
+
+
+
+void add_discovered_user( char *packet_buffer , user_info *user_list, int num_users){
+
+}
+
+
 
 void signal_handler(int param){
 	cout << "Caught signal " << param << endl;

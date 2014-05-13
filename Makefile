@@ -1,6 +1,6 @@
-PARGS=-u steveener
+PARGS=-u notNitta
 
-all: retest
+all: p2pim
 
 p2pim: p2pim_udp.o p2pim_tcp.o main.o
 	g++ main.o p2pim_udp.o p2pim_tcp.o -o p2pim
