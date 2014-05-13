@@ -1,5 +1,6 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
+#include <termios.h>
 
 
 // avoid namespace issues
@@ -16,14 +17,16 @@ const char *DEFAULT_MAX_TIMEOUT = "60";
 
 // forward declarations
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts, int *num_hosts);
-
 void signal_handler(int param);
-
 long parse_ip(std::string the_ip_string);
-
-
+void set_noncanonical_mode(int fd, struct termios *savedattributes);
+void reset_noncanonical_mode(int fd, struct termios *savedattributes);
 
 int main(int argc, char **argv){
+
+	// for non_canonical_mode
+    struct termios saved_term_attr;
+    char rx_char;
 
 	// arrays of strings for arguments
 	std::string arguments[6];
@@ -93,9 +96,15 @@ int main(int argc, char **argv){
 	cout << num_extern_hosts << endl;
 
 
+	// initialize all sockets and add them to the fd array
 	udp::initialize(arguments, &udp_server_address, &udp_socket_fd, file_descriptors);
 	num_fds++;
 	tcp::initialize(arguments, &tcp_server_address, &tcp_socket_fd, file_descriptors);
+	num_fds++;
+	// initialize non canonical mode and add to fd array
+	set_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
+	file_descriptors[2].fd = STDIN_FILENO;
+	file_descriptors[2].events = POLLIN;
 	num_fds++;
 
 
@@ -234,8 +243,28 @@ int main(int argc, char **argv){
 			}
 
 
-			cout << "End of poll else block." << endl;
+			// if STDIN recieves a key
+			if(file_descriptors[2].revents == POLLIN){
+				read(STDIN_FILENO, &rx_char, 1);
 
+				// e caught, exit
+				if( 'e' == rx_char){
+					break;
+				}
+				// l caught, list clients
+				if( 'l' == rx_char){
+
+				}
+
+
+			}
+
+
+
+
+
+
+			cout << "End of poll else block." << endl;
 
 			for( int i = 0; i < 32; i++ ){
 				if(file_descriptors[i].revents == POLLERR){
@@ -245,10 +274,7 @@ int main(int argc, char **argv){
 					cout << "Caught a POLLHUP on " << i << endl;
 				}
 			}
-
-
-
-		}
+		}// end poll return with POLLIN block
 
 
 
@@ -258,6 +284,7 @@ int main(int argc, char **argv){
 
 	}
 
+	reset_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
 
 	// broadcast closing message
 	udp::message_create(3, arguments, udp_packet_buffer, &udp_buffer_size);
@@ -379,9 +406,30 @@ long parse_ip(std::string the_ip_string){
 }
 
 
+// thanks for these functions Prof. Nitta
+void set_noncanonical_mode(int fd, struct termios *savedattributes){
+    struct termios TermAttributes;
+    
+    // Make sure stdin is a terminal. 
+    if(!isatty(fd)){
+        fprintf (stderr, "Not a terminal.\n");
+        exit(0);
+    }
+    
+    // Save the terminal attributes so we can restore them later. 
+    tcgetattr(fd, savedattributes);
+    
+    // Set the funny terminal modes. 
+    tcgetattr (fd, &TermAttributes);
+    TermAttributes.c_lflag &= ~(ICANON | ECHO); // Clear ICANON and ECHO. 
+    TermAttributes.c_cc[VMIN] = 1;
+    TermAttributes.c_cc[VTIME] = 0;
+    tcsetattr(fd, TCSAFLUSH, &TermAttributes);
+}
 
-
-
+void reset_noncanonical_mode(int fd, struct termios *savedattributes){
+    tcsetattr(fd, TCSANOW, savedattributes);
+}
 
 
 
