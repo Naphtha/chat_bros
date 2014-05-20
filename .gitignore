@@ -3,3 +3,4 @@ p2pimtester
 *.o
 p2pim
 .DS_Store
+*.tar.gz
