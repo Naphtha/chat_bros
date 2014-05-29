@@ -17,6 +17,9 @@ udp.o: p2pim_udp.cpp
 tcp.o: p2pim_tcp.cpp
 	g++ -c -Wall p2pim_tcp.cpp
 
+message.o: message.cpp
+	g++ -c -Wall message.cpp
+
 
 
 
