@@ -1,5 +1,6 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
+#include "message.h"
 #include <termios.h>
 
 
