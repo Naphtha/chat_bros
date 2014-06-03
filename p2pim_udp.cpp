@@ -83,11 +83,11 @@ int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
     tcp_port = atoi( params[2].c_str() );
 
     if(-1 == gethostname(Buffer, 255)){
-        return -1;
+        return false;
     }
     LocalHostEntry = gethostbyname(Buffer);
     if(NULL == LocalHostEntry){
-        return -1;
+        return false;
     }
     hostname = LocalHostEntry->h_name;
 
@@ -105,7 +105,7 @@ int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
 
 
 
-    return 0;
+    return true;
 }
 
 

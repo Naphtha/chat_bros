@@ -139,12 +139,17 @@ int main(int argc, char **argv){
 	// code to send to each external address
 	for(int i = 0; i < num_extern_hosts; i++){
 		// allocate udp_packet
-		if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
+		if( udp::message_create(1, arguments, theMessage) ){
+			udp_buffer_uint = theMessage.Data();
+			udp_buffer_size = theMessage.Length();
+		}
+		else{
 			cout << "Message create failed." << endl;
 			exit(EXIT_SUCCESS);
 		}
+
 		// send udp packet 
-		send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+		send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 			   0, (sockaddr *)&(external_addresses[i]), sizeof(external_addresses[i]));
 		if(send_check < 0){
 			cout << "Error in message send." << endl;
@@ -155,11 +160,7 @@ int main(int argc, char **argv){
 
 
 	// broadcast
-	// if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
-	// 	cout << "Message create failed." << endl;
-	// 	exit(EXIT_SUCCESS);
-	// }
-	if( !udp::message_create(1, arguments, theMessage) ){
+	if( udp::message_create(1, arguments, theMessage) ){
 
 		udp_buffer_uint = theMessage.Data();
 		udp_buffer_size = theMessage.Length();
@@ -194,11 +195,17 @@ int main(int argc, char **argv){
 			}
 
 			// broadcast
-			if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
+			if( udp::message_create(1, arguments, theMessage) ){
+
+				udp_buffer_uint = theMessage.Data();
+				udp_buffer_size = theMessage.Length();
+
+			}
+			else{
 				cout << "Message create failed." << endl;
 				exit(EXIT_SUCCESS);
 			}
-			send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+			send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 				   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 			if(send_check < 0){
 				perror("Error in message send.");
@@ -209,7 +216,6 @@ int main(int argc, char **argv){
 			
 		}
 		else{
-			
 			// cout << "The poll return value was: " << poll_return << endl;
 
 			// first file descriptor is always udp socket
@@ -235,8 +241,11 @@ int main(int argc, char **argv){
 
 
 
-					udp::message_create(2, arguments, udp_packet_buffer, &udp_buffer_size);
-					send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+					udp::message_create(2, arguments, theMessage);
+					udp_buffer_uint = theMessage.Data();
+					udp_buffer_size = theMessage.Length();
+					
+					send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 						   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 					if(send_check < 0){
 						perror("Error in message send.");
@@ -313,7 +322,10 @@ int main(int argc, char **argv){
 	reset_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
 
 	// broadcast closing message
-	udp::message_create(3, arguments, udp_packet_buffer, &udp_buffer_size);
+	udp::message_create(3, arguments, theMessage);
+	udp_buffer_uint = theMessage.Data();
+	udp_buffer_size = theMessage.Length();
+
 	send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
 		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 	if(send_check < 0){
