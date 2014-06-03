@@ -28,7 +28,7 @@ void UserList::addPacket(const char *packet){
 		tcp_port += packet[9];
 
 		hostname = &(packet[10]);
-		username = &(packet[10 + hostname.length()]);
+		username = &(packet[10 + hostname.length() + 1]);
 
 		std::cout << "udp_port = " << udp_port << std::endl;
 		std::cout << "tcp_port = " << tcp_port << std::endl;
