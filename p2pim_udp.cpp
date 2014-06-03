@@ -3,8 +3,7 @@
 // for debugging purposes
 #include <bitset>
 
-// returns true on success
-
+// create a udp message of any type
 int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
 
     uint16_t udp_port;
@@ -38,9 +37,6 @@ int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
     mess.AppendUInt16(tcp_port);
     mess.AppendString(hostname);
     mess.AppendString(username);
-
-
-
 
     return true;
 }

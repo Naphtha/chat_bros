@@ -1,5 +1,6 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
+#include "p2pim_user.h"
 #include <termios.h>
 
 
@@ -41,10 +42,11 @@ int main(int argc, char **argv){
 	// packet buffers and lengths
 	char udp_packet_buffer[BUFFER_SIZE];
 	int udp_buffer_size;
-	char tcp_packet_buffer[BUFFER_SIZE];
-	int tcp_buffer_size;
-
 	uint8_t const *udp_buffer_uint;
+
+	// char tcp_packet_buffer[BUFFER_SIZE];
+	// int tcp_buffer_size;
+	// uint8_t const *tcp_buffer_uint;
 
 	CNetworkMessage theMessage;
 
@@ -62,17 +64,18 @@ int main(int argc, char **argv){
 	sockaddr_in tcp_server_address;
 	// client address
 	sockaddr_in udp_client_address;
-	sockaddr_in tcp_client_address;
+	// sockaddr_in tcp_client_address;
 	// address lengths
 	socklen_t udp_client_length;
-	socklen_t tcp_client_length;
+	// socklen_t tcp_client_length;
 
+	UserList discoveredUsers;
 	
 	// check for message sendto success
 	int send_check;
 
-
 	int timeout_val;
+
 	// temp_string used for swapping strings around
 	std::string temp_string;
 
@@ -185,7 +188,7 @@ int main(int argc, char **argv){
 	while(1){
 
 		// if timeout
-		if( (poll_return = poll(file_descriptors, num_fds, timeout_val * 1000) ) == 0){
+		if( ( poll_return = poll(file_descriptors, num_fds, timeout_val * 1000) ) == 0 ){
 
 			cout << "Poll timed out with value " << timeout_val << endl;
 			// set new timeout val
@@ -239,6 +242,7 @@ int main(int argc, char **argv){
 					// craft a discovery message using 2 as arg
 					cout << "Receieved broadcast from " << &(udp_packet_buffer[10]) << endl;
 
+					discoveredUsers.addPacket(udp_packet_buffer);
 
 
 					udp::message_create(2, arguments, theMessage);
@@ -287,10 +291,12 @@ int main(int argc, char **argv){
 				if( 'e' == rx_char){
 					break;
 				}
-				// l caught, list clients
+				// l caught, list discovered clients
 				if( 'l' == rx_char){
 					cout << "List of clients: " << endl;
 				}
+
+
 
 
 			}
@@ -319,6 +325,7 @@ int main(int argc, char **argv){
 
 	}
 
+	// unset noncanonical mode
 	reset_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
 
 	// broadcast closing message
