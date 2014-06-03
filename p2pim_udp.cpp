@@ -95,7 +95,7 @@ int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
 
     mess.Clear();
 
-    mess.AppendStringWithoutNULL("P2PIM");
+    mess.AppendStringWithoutNULL("P2PI");
     mess.AppendUInt16((uint16_t) type);
     mess.AppendUInt16(udp_port);
     mess.AppendUInt16(tcp_port);
