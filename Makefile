@@ -1,4 +1,4 @@
-PARGS=-u notNitta -up 50222 -tp 50223
+PARGS=-u notNitta -up 40667 -tp 40692
 
 all: p2pim
 
@@ -32,7 +32,7 @@ run:
 	./p2pim $(PARGS)
 
 runtester:
-	./p2pimtester -up 50222 -tp 50223
+	./p2pimtester -up 40667 -tp 40692
 
 retest:
 	make clean
