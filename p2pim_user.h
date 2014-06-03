@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
+#include <stdint.h>
 
 
 
