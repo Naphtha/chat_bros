@@ -29,6 +29,9 @@ clean:
 run:
 	./p2pim $(PARGS)
 
+runtester:
+	./p2pimtester -up 50222 -tp 50223
+
 retest:
 	make clean
 	make p2pim

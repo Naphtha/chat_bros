@@ -326,7 +326,7 @@ int main(int argc, char **argv){
 	udp_buffer_uint = theMessage.Data();
 	udp_buffer_size = theMessage.Length();
 
-	send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+	send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 	if(send_check < 0){
 		perror("Error in message send.");
