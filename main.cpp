@@ -1,6 +1,5 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
-#include "message.h"
 #include <termios.h>
 
 
@@ -17,12 +16,6 @@ const char *DEFAULT_TCP = "50551";
 const char *DEFAULT_MIN_TIMEOUT = "5";
 const char *DEFAULT_MAX_TIMEOUT = "60"; 
 
-// struct for keeping track of userlist
-struct user_info{
-	int TCP_port;
-	std::string username;
-	std::string hostname;
-};
 
 // forward declarations
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts, int *num_hosts);
@@ -30,7 +23,6 @@ void signal_handler(int param);
 long parse_ip(std::string the_ip_string);
 void set_noncanonical_mode(int fd, struct termios *savedattributes);
 void reset_noncanonical_mode(int fd, struct termios *savedattributes);
-void add_discovered_user( char *packet_buffer , user_info *user_list, int num_users);
 
 
 
@@ -52,6 +44,10 @@ int main(int argc, char **argv){
 	char tcp_packet_buffer[BUFFER_SIZE];
 	int tcp_buffer_size;
 
+	uint8_t const *udp_buffer_uint;
+
+	CNetworkMessage theMessage;
+
 	// set of connections for poll
 	// 3 is min number of sockets required for operation
 	// 0 is udp, 1 is tcp, 2 is STDINN
@@ -71,12 +67,10 @@ int main(int argc, char **argv){
 	socklen_t udp_client_length;
 	socklen_t tcp_client_length;
 
-	// connected clients
-	user_info connected_clients[MAX_CLIENTS];
-	int num_users;
 	
 	// check for message sendto success
 	int send_check;
+
 
 	int timeout_val;
 	// temp_string used for swapping strings around
@@ -161,18 +155,29 @@ int main(int argc, char **argv){
 
 
 	// broadcast
-	if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
+	// if( udp::message_create(1, arguments, udp_packet_buffer, &udp_buffer_size) ){
+	// 	cout << "Message create failed." << endl;
+	// 	exit(EXIT_SUCCESS);
+	// }
+	if( !udp::message_create(1, arguments, theMessage) ){
+
+		udp_buffer_uint = theMessage.Data();
+		udp_buffer_size = theMessage.Length();
+
+	}
+	else{
 		cout << "Message create failed." << endl;
 		exit(EXIT_SUCCESS);
 	}
-	send_check = sendto(udp_socket_fd, udp_packet_buffer, udp_buffer_size,
+
+	send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 	if(send_check < 0){
 		perror("Error in message send.");
 		exit(0);
 	}
 
-	// cout << "Broadcasted." << endl;
+	cout << "Broadcasted." << endl;
 
 
 
@@ -326,11 +331,6 @@ int main(int argc, char **argv){
 	return 0;
 }
 
-
-
-void add_discovered_user( char *packet_buffer , user_info *user_list, int num_users){
-
-}
 
 
 

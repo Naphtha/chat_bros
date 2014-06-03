@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <poll.h>
+#include "message.h"
 
 
 namespace p2pim_tcp

@@ -1,5 +1,5 @@
-#ifndef MESSAGE_P2PIM_H
-#define MESSAGE_P2PIM_H
+#ifndef P2PIM_MESSAGE_H
+#define P2PIM_MESSAGE_H
 
 #include <stdio.h>
 #include <vector>

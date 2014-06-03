@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <poll.h>
+#include "message.h"
 
 
 namespace p2pim_udp
@@ -26,7 +27,7 @@ namespace p2pim_udp
 	// creates a udp message for sending
 	int message_create(short type, std::string *params, char *buffer, int *buffer_size);
 
-
+	int message_create(int type, std::string *params, CNetworkMessage &mess);
 
 
 

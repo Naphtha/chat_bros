@@ -68,6 +68,46 @@ int udp::message_create(short type, std::string *params, char *buffer, int *buff
 }
 
 
+int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
+
+    uint16_t udp_port;
+    uint16_t tcp_port;
+
+    char Buffer[256];
+    struct hostent *LocalHostEntry;
+    std::string hostname;
+    std::string username;
+
+
+    udp_port = atoi( params[1].c_str() );
+    tcp_port = atoi( params[2].c_str() );
+
+    if(-1 == gethostname(Buffer, 255)){
+        return -1;
+    }
+    LocalHostEntry = gethostbyname(Buffer);
+    if(NULL == LocalHostEntry){
+        return -1;
+    }
+    hostname = LocalHostEntry->h_name;
+
+    username = params[0];
+
+    mess.Clear();
+
+    mess.AppendStringWithoutNULL("P2PIM");
+    mess.AppendUInt16((uint16_t) type);
+    mess.AppendUInt16(udp_port);
+    mess.AppendUInt16(tcp_port);
+    mess.AppendString(hostname);
+    mess.AppendString(username);
+
+
+
+
+    return 0;
+}
+
 
 void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket_file_descriptor,
 					 pollfd *file_descriptors){
