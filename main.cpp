@@ -234,6 +234,7 @@ int main(int argc, char **argv){
 				// if packet came from us, ignore it
 				if( !strcmp(&(udp_packet_buffer[10]), arguments[5].c_str()) ){
 					cout << "Received self broadcast." << endl;
+					cout << "Received message type: " << &(udp_packet_buffer[5]) << endl;
 					continue;
 				}
 
