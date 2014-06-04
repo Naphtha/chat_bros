@@ -96,14 +96,14 @@ int tcp::message_create(int type, CNetworkMessage &mess, std::string theMessage)
 bool tcp::lookup_user(user &theUser, sockaddr_in *client_address){
 
 	int tcp_port;
-	struct hostent *LocalHostEntry;
+	struct hostent *HostEntry;
 
 
 	tcp_port = theUser.tcp_port;
 
 
-    LocalHostEntry = gethostbyname(theUser.hostname.c_str());
-    if(NULL == LocalHostEntry){
+    HostEntry = gethostbyname(theUser.hostname.c_str());
+    if(NULL == HostEntry){
         return false;
     }
 

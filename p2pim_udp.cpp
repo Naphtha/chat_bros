@@ -9,8 +9,6 @@ int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
     uint16_t udp_port;
     uint16_t tcp_port;
 
-    char Buffer[256];
-    struct hostent *LocalHostEntry;
     std::string hostname;
     std::string username;
 
@@ -18,15 +16,7 @@ int udp::message_create(int type, std::string *params, CNetworkMessage &mess){
     udp_port = atoi( params[1].c_str() );
     tcp_port = atoi( params[2].c_str() );
 
-    if(-1 == gethostname(Buffer, 255)){
-        return false;
-    }
-    LocalHostEntry = gethostbyname(Buffer);
-    if(NULL == LocalHostEntry){
-        return false;
-    }
-    hostname = LocalHostEntry->h_name;
-
+    hostname = params[5];
     username = params[0];
 
     mess.Clear();
@@ -49,7 +39,6 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
 	int broadcast_enable;
 	int reuse_enable;
 	int port_number;
-	int port_reuse_enable;
 
     *socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(0 > *socket_file_descriptor){
