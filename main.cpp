@@ -8,7 +8,7 @@
 using std::cout;
 using std::endl;
 
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 512
 #define MAX_CLIENTS 32
 
 // defaults for program
@@ -44,9 +44,9 @@ int main(int argc, char **argv){
 	int udp_buffer_size;
 	uint8_t const *udp_buffer_uint;
 
-	// char tcp_packet_buffer[BUFFER_SIZE];
-	// int tcp_buffer_size;
-	// uint8_t const *tcp_buffer_uint;
+	char tcp_packet_buffer[BUFFER_SIZE];
+	int tcp_buffer_size;
+	uint8_t const *tcp_buffer_uint;
 
 	CNetworkMessage theMessage;
 
@@ -326,7 +326,7 @@ int main(int argc, char **argv){
 					
 					set_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
 
-					
+
 
 					connectedUsers.addUser( discoveredUsers.accessUser(userNum) );
 					cout << "Sent connection request." << endl;
