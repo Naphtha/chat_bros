@@ -190,6 +190,10 @@ int main(int argc, char **argv){
 		// if timeout
 		if( ( poll_return = poll(file_descriptors, num_fds, timeout_val * 1000) ) == 0 ){
 
+			if( !discoveredUsers.empty() ){
+				continue;
+			}
+
 			cout << "Poll timed out with value " << timeout_val << endl;
 			// set new timeout val
 			timeout_val *= 2;
@@ -234,14 +238,16 @@ int main(int argc, char **argv){
 				// if packet came from us, ignore it
 				if( !strcmp(&(udp_packet_buffer[10]), arguments[5].c_str()) ){
 					cout << "Received self broadcast." << endl;
-					cout << "Received message type: " << udp_packet_buffer[5] << endl;
 					continue;
 				}
+
+
+
 
 				// if packet is discovery, reply
 				if( udp_packet_buffer[5] == 0x01){
 					// craft a discovery message using 2 as arg
-					cout << "Receieved broadcast from " << &(udp_packet_buffer[10]) << endl;
+					cout << "Received broadcast from " << &(udp_packet_buffer[10]) << endl;
 
 					discoveredUsers.addUser(udp_packet_buffer);
 

@@ -11,6 +11,15 @@ UserList::UserList(){
 
 }
 
+bool UserList::empty(){
+
+	if( this->users.empty() ){
+		return true;
+	}
+	else
+		return false;
+}
+
 void UserList::printUsers(){
 
 	std::cout << "Discovered " << this->users.size() << " users." << std::endl;
