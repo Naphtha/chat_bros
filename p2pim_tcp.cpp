@@ -34,43 +34,62 @@ void tcp::initialize(std::string *args, sockaddr_in *server_address, int *socket
 
 
 
-int tcp::messsage_create(short type, std::string *params, char *buffer, int *buffer_size){
-
-	int buffer_index = 6;
-
-	bzero( buffer, sizeof(buffer) );
-
-	buffer[0] = 'P';
-	buffer[1] = '2';
-	buffer[2] = 'P';
-	buffer[3] = 'I';
-	buffer[4] = 0x00;
-	buffer[5] = type;
+int tcp::message_create(int type, CNetworkMessage &mess, std::string *params){
 
 
-	if(0x04 == type){
-		for( int i = 0; i < params[0].length(); i++ ){
-			buffer[buffer_index++] = params[0][i];
-		}
+	std::string username;
 
-		buffer[buffer_index++] = '\0';
+	mess.AppendStringWithoutNULL("P2PI");
+	mess.AppendUInt16( (uint16_t) type);
 
-		*buffer_size = buffer_index - 1;
-	}
-	else{
+	// message is an establish communications
+	if( 0x04 == type ){
 
-		*buffer_size = buffer_index;
+		username = params[0];
+		mess.AppendString(username);
 	}
 
-	return 0;
+	return true;
+
+}
+
+
+// only to be used with userlist reply messages
+int tcp::message_create(int type, CNetworkMessage &mess, const UserList &discoveredUsers){
+
+	if( 0x08 != type ){
+		return false;
+	}
+
+
+	mess.AppendStringWithoutNULL("P2PI");
+	mess.AppendUInt16( (uint16_t) type );
+
+
+
+	return true;
 
 }
 
 
 
+// only to be used with data messages
+int tcp::message_create(int type, CNetworkMessage &mess, std::string theMessage){
 
 
+	std::string username;
 
+	if( 0x09 != type ){
+		return false;
+	}
+
+	mess.AppendStringWithoutNULL("P2PI");
+	mess.AppendUInt16( (uint16_t) type);
+	mess.AppendString(theMessage);
+
+
+	return true;
+}
 
 
 

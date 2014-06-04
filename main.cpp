@@ -309,6 +309,7 @@ int main(int argc, char **argv){
 				}
 				// l caught, list discovered clients
 				if( 'l' == rx_char ){
+					cout << endl;
 					cout << "List of clients: " << endl;
 					discoveredUsers.printUsers();
 				}
@@ -325,10 +326,13 @@ int main(int argc, char **argv){
 					
 					set_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
 
+					
+
 					connectedUsers.addUser( discoveredUsers.accessUser(userNum) );
 					cout << "Sent connection request." << endl;
 				}
 				if( 'u' == rx_char ){
+					cout << endl;
 					cout << "List of connected users: " << endl;
 					connectedUsers.printUsers();
 

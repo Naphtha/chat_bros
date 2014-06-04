@@ -13,6 +13,7 @@
 #include <netdb.h> 
 #include <poll.h>
 #include "message.h"
+#include "p2pim_user.h"
 
 
 namespace p2pim_tcp
@@ -22,11 +23,13 @@ namespace p2pim_tcp
 	void initialize(std::string *args, sockaddr_in *server_address, int *socket_file_descriptor,
 					pollfd *file_descriptors);
 
-	// message create for generic functions
-	// creates messages 04, 05, 06, 07, 0A
-	int messsage_create(short type, std::string *params, char *buffer, int *buffer_size);
+	// for most messages
+	int message_create(int type, CNetworkMessage &mess, std::string *params);
 
+	int message_create(int type, CNetworkMessage &mess, const UserList &discoveredUsers);
 
+	// for chat messages
+	int message_create(int type, CNetworkMessage &mess, std::string theMessage);
 
 
 
