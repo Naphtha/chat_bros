@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <string.h>
 #include <stdint.h>
-
+#include <arpa/inet.h>
 
 
 struct user{
