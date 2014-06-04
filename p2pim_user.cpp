@@ -60,8 +60,8 @@ void UserList::addUser(const char *packet){
 		username = &(packet[10 + hostname.length() + 1]);
 
 		// add parsed args to data structure
-		theUser.udp_port = udp_port;
-		theUser.tcp_port = tcp_port;
+		theUser.udp_port = ntohs(udp_port);
+		theUser.tcp_port = ntohs(tcp_port);
 		theUser.hostname = hostname;
 		theUser.username = username;
 
