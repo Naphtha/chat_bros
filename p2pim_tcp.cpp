@@ -93,6 +93,33 @@ int tcp::message_create(int type, CNetworkMessage &mess, std::string theMessage)
 
 
 
+bool tcp::lookup_user(user &theUser, sockaddr_in *client_address){
+
+	int tcp_port;
+	struct hostent *LocalHostEntry;
+
+
+	tcp_port = theUser.tcp_port;
+
+
+    LocalHostEntry = gethostbyname(theUser.hostname.c_str());
+    if(NULL == LocalHostEntry){
+        return false;
+    }
+
+
+
+
+
+	client_address->sin_family = AF_INET;
+	client_address->sin_port = htons( tcp_port );
+
+
+
+	return true;
+}
+
+
 
 
 

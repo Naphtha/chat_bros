@@ -31,7 +31,7 @@ namespace p2pim_tcp
 	// for chat messages
 	int message_create(int type, CNetworkMessage &mess, std::string theMessage);
 
-
+	bool lookup_user(user &theUser, sockaddr_in *client_address);
 
 
 

@@ -64,10 +64,10 @@ int main(int argc, char **argv){
 	sockaddr_in tcp_server_address;
 	// client address
 	sockaddr_in udp_client_address;
-	// sockaddr_in tcp_client_address;
+	sockaddr_in tcp_client_address;
 	// address lengths
 	socklen_t udp_client_length;
-	// socklen_t tcp_client_length;
+	socklen_t tcp_client_length;
 
 	UserList discoveredUsers;
 	UserList  connectedUsers;
@@ -95,6 +95,7 @@ int main(int argc, char **argv){
 
 	bzero(file_descriptors, sizeof(file_descriptors));
 	bzero(udp_packet_buffer, BUFFER_SIZE);
+	bzero(tcp_packet_buffer, BUFFER_SIZE);
 
 	signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
@@ -327,6 +328,11 @@ int main(int argc, char **argv){
 					set_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
 
 
+					
+
+					// send_check = sendto(tcp_socket_fd, tcp_buffer_uint, tcp_buffer_size,
+					//	0, (sockaddr *)&tcp_client_address, sizeof(tcp_client_address));
+
 
 					connectedUsers.addUser( discoveredUsers.accessUser(userNum) );
 					cout << "Sent connection request." << endl;
@@ -359,11 +365,6 @@ int main(int argc, char **argv){
 		}// end poll return with POLLIN block
 
 
-
-
-
-
-
 	}
 
 	// unset noncanonical mode
@@ -390,6 +391,20 @@ int main(int argc, char **argv){
 
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
