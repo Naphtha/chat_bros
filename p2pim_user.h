@@ -27,7 +27,7 @@ class UserList{
 		UserList();
 		void printUsers();
 		void addUser(const char *packet);
-
+		void removeUser(const char *packet);
 
 
 

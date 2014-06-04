@@ -18,8 +18,8 @@ void UserList::printUsers(){
 	for( int i = 0; i < this->users.size(); i++ ){
 
 		std::cout << "User " << i << " " << this->users[i].username << "@"
-		<< this->users[i].hostname << "on " << "UDP Port: "
-		<< this->users[i].udp_port << "and TCP Port: " << this->users[i].tcp_port
+		<< this->users[i].hostname << " on " << "UDP Port: "
+		<< this->users[i].udp_port << " and TCP Port: " << this->users[i].tcp_port
 		<< std::endl;
 
 	}
@@ -36,8 +36,7 @@ void UserList::addUser(const char *packet){
 	std::string hostname;
 	std::string username;
 
-
-
+	// if udp packet
 	if( (0x01 == packet[5]) || (0x02 == packet[5]) || (0x03 == packet[5]) ){
 
 		udp_port = packet[6];
@@ -63,5 +62,33 @@ void UserList::addUser(const char *packet){
 
 
 
+	return;
+}
+
+
+void UserList::removeUser(const char *packet){
+
+	std::string hostname;
+	std::string username;
+
+	hostname = &(packet[10]);
+	username = &(packet[10 + hostname.length() + 1]);
+
+	for( int i = 0; i < this->users.size(); i++ ){
+
+		if( this->users[i].hostname == hostname ){
+			if( this->users[i].username == username ){
+				this->users.erase( this->users.begin() + i );
+				return;
+			}
+		}
+	}
+
+
+	return;
 
 }
+
+
+
+

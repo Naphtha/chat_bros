@@ -267,6 +267,8 @@ int main(int argc, char **argv){
 
 				// if packet is close
 				if( udp_packet_buffer[5] == 0x03 ){
+					
+					discoveredUsers.removeUser(udp_packet_buffer);
 
 					cout << "Receieved closing message from " << &(udp_packet_buffer[10]) << endl;
 				}
