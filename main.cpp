@@ -242,7 +242,7 @@ int main(int argc, char **argv){
 					// craft a discovery message using 2 as arg
 					cout << "Receieved broadcast from " << &(udp_packet_buffer[10]) << endl;
 
-					discoveredUsers.addPacket(udp_packet_buffer);
+					discoveredUsers.addUser(udp_packet_buffer);
 
 
 					udp::message_create(2, arguments, theMessage);
@@ -259,6 +259,8 @@ int main(int argc, char **argv){
 
 				// if packet is reply
 				if( udp_packet_buffer[5] == 0x02){
+
+					discoveredUsers.addUser(udp_packet_buffer);
 
 					cout << "Receieved reply message from " << &(udp_packet_buffer[10]) << endl;
 				}
@@ -294,6 +296,7 @@ int main(int argc, char **argv){
 				// l caught, list discovered clients
 				if( 'l' == rx_char){
 					cout << "List of clients: " << endl;
+					discoveredUsers.printUsers();
 				}
 
 

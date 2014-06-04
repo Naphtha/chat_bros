@@ -4,9 +4,30 @@
 
 UserList::UserList(){
 
+	if( !this->users.empty() ){
+		this->users.clear();
+	}
+	
+
 }
 
-void UserList::addPacket(const char *packet){
+void UserList::printUsers(){
+
+	std::cout << "Discovered " << this->users.size() << " users." << std::endl;
+
+	for( int i = 0; i < this->users.size(); i++ ){
+
+		std::cout << "User " << i << " " << this->users[i].username << "@"
+		<< this->users[i].hostname << "on " << "UDP Port: "
+		<< this->users[i].udp_port << "and TCP Port: " << this->users[i].tcp_port
+		<< std::endl;
+
+	}
+
+	return;
+}
+
+void UserList::addUser(const char *packet){
 
 
 	user theUser;
@@ -17,7 +38,7 @@ void UserList::addPacket(const char *packet){
 
 
 
-	if( packet[5] == 0x01 ){
+	if( (0x01 == packet[5]) || (0x02 == packet[5]) || (0x03 == packet[5]) ){
 
 		udp_port = packet[6];
 		udp_port = udp_port << 8;
@@ -30,11 +51,13 @@ void UserList::addPacket(const char *packet){
 		hostname = &(packet[10]);
 		username = &(packet[10 + hostname.length() + 1]);
 
-		std::cout << "udp_port = " << udp_port << std::endl;
-		std::cout << "tcp_port = " << tcp_port << std::endl;
-		std::cout << "hostname = " << hostname << std::endl;
-		std::cout << "username = " << username << std::endl;
+		// add parsed args to data structure
+		theUser.udp_port = udp_port;
+		theUser.tcp_port = tcp_port;
+		theUser.hostname = hostname;
+		theUser.username = username;
 
+		this->users.push_back(theUser);
 
 	}
 

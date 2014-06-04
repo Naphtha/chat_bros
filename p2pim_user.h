@@ -25,7 +25,9 @@ class UserList{
 
 	public:
 		UserList();
-		void addPacket(const char *packet);
+		void printUsers();
+		void addUser(const char *packet);
+
 
 
 
