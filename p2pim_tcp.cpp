@@ -64,7 +64,7 @@ int tcp::message_create(int type, CNetworkMessage &mess, const UserList &discove
 
 	mess.AppendStringWithoutNULL("P2PI");
 	mess.AppendUInt16( (uint16_t) type );
-
+	mess.AppendUInt32( (uint32_t) discoveredUsers.size() );
 
 
 	return true;

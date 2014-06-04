@@ -25,14 +25,19 @@ class UserList{
 
 	public:
 		UserList();
+		
 		void printUsers();
+		
 		void addUser(const char *packet);
 		void addUser(const user &theUser);
+		
 		user accessUser(int index);
+
 		void removeUser(const char *packet);
 		void removeUser(int index);
+		
 		bool empty();
-
+		int size() const;
 
 
 

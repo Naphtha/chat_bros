@@ -126,5 +126,9 @@ void UserList::removeUser(const char *packet){
 }
 
 
+int UserList::size() const {
 
+	return this->users.size();
+
+}
 
