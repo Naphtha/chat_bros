@@ -24,7 +24,7 @@ void signal_handler(int param);
 long parse_ip(std::string the_ip_string);
 void set_noncanonical_mode(int fd, struct termios *savedattributes);
 void reset_noncanonical_mode(int fd, struct termios *savedattributes);
-
+void DumpData(const uint8_t *payload, int length);
 
 
 int main(int argc, char **argv){
@@ -92,6 +92,7 @@ int main(int argc, char **argv){
 	timeout_val = atoi( arguments[3].c_str() );
 
 	bzero(file_descriptors, sizeof(file_descriptors));
+	bzero(udp_packet_buffer, BUFFER_SIZE);
 
 	signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
@@ -223,6 +224,9 @@ int main(int argc, char **argv){
 			
 		}
 		else{
+
+			DumpData((uint8_t*)udp_packet_buffer, 20);
+
 			// cout << "The poll return value was: " << poll_return << endl;
 
 			// first file descriptor is always udp socket
@@ -494,6 +498,44 @@ void reset_noncanonical_mode(int fd, struct termios *savedattributes){
 
 
 
+void DumpData(const uint8_t *payload, int length){
+    int Offset;
+    
+    Offset = 0;
+    while(Offset < length){
+        for(int Index = 0; Index < 16; Index++){
+            if(8 == Index){
+                printf(" ");   
+            }
+            if(Offset + Index < length){
+                printf("%02X ",payload[Offset + Index]);
+            }
+            else{
+                printf("   ");
+            }
+        }
+        printf("   ");
+        for(int Index = 0; Index < 16; Index++){
+            if(8 == Index){
+                printf(" ");   
+            }
+            if(Offset + Index < length){
+                if((' ' <= payload[Offset + Index])&&('~' >= payload[Offset + Index])){
+                    printf("%c",payload[Offset + Index]);
+                }
+                else{
+                    printf(".");
+                }
+            }
+            else{
+                printf(" ");
+            }
+        }
+        printf("\n");
+        Offset += 16;
+    }
+    
+}
 
 
 

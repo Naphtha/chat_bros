@@ -69,9 +69,6 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     result += setsockopt(*socket_file_descriptor, SOL_SOCKET, SO_REUSEADDR,
     					&reuse_enable, sizeof(reuse_enable));
 
-    port_reuse_enable = 1;
-    result += setsockopt(*socket_file_descriptor, SOL_SOCKET, SO_REUSEPORT,
-    					&port_reuse_enable, sizeof(port_reuse_enable));
     if(0 > result){
         close(*socket_file_descriptor);
         perror("Error setting socket option.");
