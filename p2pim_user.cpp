@@ -22,7 +22,7 @@ bool UserList::empty(){
 
 void UserList::printUsers(){
 
-	std::cout << "Discovered " << this->users.size() << " users." << std::endl;
+	std::cout << this->users.size() << " users found." << std::endl;
 
 	for( int i = 0; i < this->users.size(); i++ ){
 
@@ -72,6 +72,33 @@ void UserList::addUser(const char *packet){
 
 
 	return;
+}
+
+void UserList::addUser(const user &theUser){
+
+	this->users.push_back(theUser);
+	return;
+}
+
+void UserList::removeUser(int index){
+
+	this->users.erase( this->users.begin() + index );
+
+	return;
+}
+
+user UserList::accessUser(int index){
+
+	user blankUser;
+
+	if( index < this->users.size() ){
+
+		return this->users[index];
+	}
+	else{
+		return blankUser;
+	}
+
 }
 
 

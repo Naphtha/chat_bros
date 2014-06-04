@@ -70,7 +70,8 @@ int main(int argc, char **argv){
 	// socklen_t tcp_client_length;
 
 	UserList discoveredUsers;
-	
+	UserList  connectedUsers;
+
 	// check for message sendto success
 	int send_check;
 
@@ -78,6 +79,7 @@ int main(int argc, char **argv){
 
 	// temp_string used for swapping strings around
 	std::string temp_string;
+	int userNum;
 
 
 	if( (argc % 2) != 1){
@@ -225,7 +227,6 @@ int main(int argc, char **argv){
 		}
 		else{
 
-			DumpData((uint8_t*)udp_packet_buffer, 20);
 
 			// cout << "The poll return value was: " << poll_return << endl;
 
@@ -303,15 +304,35 @@ int main(int argc, char **argv){
 				read(STDIN_FILENO, &rx_char, 1);
 
 				// e caught, exit
-				if( 'e' == rx_char){
+				if( 'e' == rx_char ){
 					break;
 				}
 				// l caught, list discovered clients
-				if( 'l' == rx_char){
+				if( 'l' == rx_char ){
 					cout << "List of clients: " << endl;
 					discoveredUsers.printUsers();
 				}
+				// if c, try and connect to a specified client
+				if( 'c' == rx_char ){
 
+					cout << endl;
+
+					cout << "Select a client to connect to using the user number." << endl;
+					discoveredUsers.printUsers();
+					reset_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
+
+					scanf("%d", &userNum);
+					
+					set_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
+
+					connectedUsers.addUser( discoveredUsers.accessUser(userNum) );
+					cout << "Sent connection request." << endl;
+				}
+				if( 'u' == rx_char ){
+					cout << "List of connected users: " << endl;
+					connectedUsers.printUsers();
+
+				}
 
 
 
