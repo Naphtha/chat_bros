@@ -370,11 +370,6 @@ int main(int argc, char **argv){
 			}
 
 
-			for( int i = 3; i < num_fds; i++ ){
-
-
-			}
-
 
 
 
