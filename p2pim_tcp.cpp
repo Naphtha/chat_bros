@@ -109,9 +109,10 @@ bool tcp::lookup_user(user &theUser, sockaddr_in *client_address){
 
 
 
-
-
 	client_address->sin_family = AF_INET;
+
+	bcopy((char *) HostEntry->h_addr, (char *)&client_address->sin_addr.s_addr, HostEntry->h_length);
+
 	client_address->sin_port = htons( tcp_port );
 
 

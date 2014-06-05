@@ -79,6 +79,7 @@ int main(int argc, char **argv){
 
 	// temp_string used for swapping strings around
 	std::string temp_string;
+	user tempUser;
 	int userNum;
 
 
@@ -322,16 +323,19 @@ int main(int argc, char **argv){
 					cout << "Select a client to connect to using the user number." << endl;
 					discoveredUsers.printUsers();
 					reset_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
-
 					scanf("%d", &userNum);
-					
 					set_noncanonical_mode(STDIN_FILENO, &saved_term_attr);
 
 
-					
+					tempUser = discoveredUsers.accessUser(userNum);
+					tcp::lookup_user(tempUser, &tcp_client_address);
 
-					// send_check = sendto(tcp_socket_fd, tcp_buffer_uint, tcp_buffer_size,
-					//	0, (sockaddr *)&tcp_client_address, sizeof(tcp_client_address));
+					tcp::message_create(4, theMessage, arguments);
+					tcp_buffer_uint = theMessage.Data();
+					tcp_buffer_size = theMessage.Length();
+
+					send_check = sendto(tcp_socket_fd, tcp_buffer_uint, tcp_buffer_size,
+						0, (sockaddr *)&tcp_client_address, sizeof(tcp_client_address));
 
 
 					connectedUsers.addUser( discoveredUsers.accessUser(userNum) );

@@ -48,20 +48,19 @@ void UserList::addUser(const char *packet){
 	// if udp packet
 	if( (0x01 == packet[5]) || (0x02 == packet[5]) || (0x03 == packet[5]) ){
 
-		udp_port = packet[6];
-		udp_port = udp_port << 8;
-		udp_port += packet[7];
 
-		tcp_port = packet[8];
-		tcp_port = tcp_port << 8;
-		tcp_port += packet[9];
+		memcpy(&udp_port, &(packet[6]), 2);
+		udp_port = ntohs(udp_port);
+
+		memcpy(&tcp_port, &(packet[8]), 2);
+		tcp_port = ntohs(udp_port);
 
 		hostname = &(packet[10]);
 		username = &(packet[10 + hostname.length() + 1]);
 
 		// add parsed args to data structure
-		theUser.udp_port = ntohs(udp_port);
-		theUser.tcp_port = ntohs(tcp_port);
+		theUser.udp_port = udp_port;
+		theUser.tcp_port = tcp_port;
 		theUser.hostname = hostname;
 		theUser.username = username;
 
