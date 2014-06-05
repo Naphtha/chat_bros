@@ -34,7 +34,7 @@ int main(int argc, char **argv){
     char rx_char;
 
 	// arrays of strings for arguments
-	std::string arguments[6];
+	std::string arguments[8];
 	std::string external_hosts[8];
 	sockaddr_in external_addresses[8];
 	int num_extern_hosts = 0;
@@ -299,6 +299,7 @@ int main(int argc, char **argv){
 
 
 
+
 			} // end of tcp revents
 
 
@@ -369,12 +370,15 @@ int main(int argc, char **argv){
 			}
 
 
+			for( int i = 3; i < num_fds; i++ ){
+
+
+			}
 
 
 
 
-
-			for( int i = 0; i < 32; i++ ){
+			for( int i = 0; i < num_fds; i++ ){
 				if(file_descriptors[i].revents == POLLERR){
 					cout << "Caught a POLLERR on " << i << endl;
 				}
@@ -502,6 +506,9 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 			hosts_index++;
 			// keeps track of the extra broadcast messages to send
 			(*num_hosts)++;
+		}
+		else if( !strcmp(argv[i], "-ap") ){
+
 		}
 		else{
 			cout << "There was a problem parsing the arguments." << endl;
