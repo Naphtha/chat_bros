@@ -53,7 +53,7 @@ void UserList::addUser(const char *packet){
 		udp_port = ntohs(udp_port);
 
 		memcpy(&tcp_port, &(packet[8]), 2);
-		tcp_port = ntohs(udp_port);
+		tcp_port = ntohs(tcp_port);
 
 		hostname = &(packet[10]);
 		username = &(packet[10 + hostname.length() + 1]);
