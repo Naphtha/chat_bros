@@ -378,7 +378,7 @@ int main(int argc, char **argv){
 
 
 
-			for( int i = 0; i < num_fds; i++ ){
+			for( int i = 0; i < 32; i++ ){
 				if(file_descriptors[i].revents == POLLERR){
 					cout << "Caught a POLLERR on " << i << endl;
 				}
