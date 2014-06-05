@@ -67,7 +67,7 @@ int main(int argc, char **argv){
 	sockaddr_in tcp_client_address;
 	// address lengths
 	socklen_t udp_client_length;
-	socklen_t tcp_client_length;
+	// socklen_t tcp_client_length;
 
 	UserList discoveredUsers;
 	UserList  connectedUsers;
@@ -81,6 +81,7 @@ int main(int argc, char **argv){
 	std::string temp_string;
 	user tempUser;
 	int userNum;
+	int tempSocketFD;
 
 
 	if( (argc % 2) != 1){
@@ -330,13 +331,23 @@ int main(int argc, char **argv){
 					tempUser = discoveredUsers.accessUser(userNum);
 					tcp::lookup_user(tempUser, &tcp_client_address);
 
+					tempSocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+					if( 0 > tempSocketFD ){
+						perror("Error opening tcp socket for initial connect");
+					}
+
+					if( 0 > connect(tempSocketFD, (struct sockaddr *)&tcp_client_address, sizeof(tcp_client_address))){
+						perror("error connecting to tcp socket for initial connect");
+					}
+
 					tcp::message_create(4, theMessage, arguments);
 					tcp_buffer_uint = theMessage.Data();
 					tcp_buffer_size = theMessage.Length();
 
-					send_check = sendto(tcp_socket_fd, tcp_buffer_uint, tcp_buffer_size,
-						0, (sockaddr *)&tcp_client_address, sizeof(tcp_client_address));
-
+					send_check = write(tempSocketFD, tcp_buffer_uint, tcp_buffer_size);
+					if( 0 > send_check){
+						perror("Error writing to new tcp socket.");
+					}
 
 					connectedUsers.addUser( discoveredUsers.accessUser(userNum) );
 					cout << "Sent connection request." << endl;
