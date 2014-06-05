@@ -351,6 +351,11 @@ int main(int argc, char **argv){
 
 					connectedUsers.addUser( discoveredUsers.accessUser(userNum) );
 					cout << "Sent connection request." << endl;
+
+					file_descriptors[num_fds].fd = tempSocketFD;
+					file_descriptors[num_fds].events = POLLIN;
+					num_fds++;
+
 				}
 				if( 'u' == rx_char ){
 					cout << endl;
