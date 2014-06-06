@@ -70,7 +70,7 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
     bzero((char *) server_address, sizeof(*server_address));
     // set address values
     server_address->sin_family = AF_INET;
-    server_address->sin_addr.s_addr = htonl(INADDR_BROADCAST);
+    server_address->sin_addr.s_addr = htonl(INADDR_ANY);
     server_address->sin_port = htons(port_number);
 
     // bind sockets

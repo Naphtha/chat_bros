@@ -174,18 +174,24 @@ int main(int argc, char **argv){
 		udp_buffer_uint = theMessage.Data();
 		udp_buffer_size = theMessage.Length();
 
+
 	}
 	else{
 		cout << "Message create failed." << endl;
 		exit(EXIT_SUCCESS);
 	}
 
+	// set to broadcast before broadcasting
+    udp_server_address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+    // send the packet to broadcast address
 	send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 	if(send_check < 0){
 		perror("Error in message send.");
 		exit(0);
 	}
+	// return udp socket to any addr
+    udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	cout << "Broadcasted." << endl;
 
@@ -218,12 +224,14 @@ int main(int argc, char **argv){
 				cout << "Message create failed." << endl;
 				exit(EXIT_SUCCESS);
 			}
+    		udp_server_address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 			send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 				   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 			if(send_check < 0){
 				perror("Error in message send.");
 				exit(0);
 			}
+    		udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 			// cout << "Broadcasted." << endl;
 
 			
@@ -394,12 +402,15 @@ int main(int argc, char **argv){
 	udp_buffer_uint = theMessage.Data();
 	udp_buffer_size = theMessage.Length();
 
+
+	udp_server_address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 	send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 	if(send_check < 0){
 		perror("Error in message send.");
 		exit(0);
 	}
+	udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	// close socket file descriptors
 	for(unsigned int i = 0; i < num_fds; i++ ){
