@@ -91,6 +91,32 @@ void udp::initialize(std::string *args, sockaddr_in *server_address, int *socket
 
 
 
+bool udp::lookup_user(user &theUser, sockaddr_in *client_address){
+
+    int udp_port;
+    struct hostent *HostEntry;
+
+
+    udp_port = theUser.udp_port;
+
+
+    HostEntry = gethostbyname(theUser.hostname.c_str());
+    if(NULL == HostEntry){
+        return false;
+    }
+
+
+
+    client_address->sin_family = AF_INET;
+
+    bcopy((char *) HostEntry->h_addr, (char *)&client_address->sin_addr.s_addr, HostEntry->h_length);
+
+    client_address->sin_port = htons( udp_port );
+
+
+
+    return true;
+}
 
 
 

@@ -13,6 +13,7 @@
 #include <netdb.h> 
 #include <poll.h>
 #include "message.h"
+#include "p2pim_user.h"
 
 
 namespace p2pim_udp
@@ -28,6 +29,7 @@ namespace p2pim_udp
 	int message_create(int type, std::string *params, CNetworkMessage &mess);
 
 
+	bool lookup_user(user &theUser, sockaddr_in *client_address);
 
 
 

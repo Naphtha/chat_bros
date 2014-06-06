@@ -232,6 +232,8 @@ int main(int argc, char **argv){
 				exit(0);
 			}
     		udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+			bzero(udp_packet_buffer, BUFFER_SIZE);
+
 			// cout << "Broadcasted." << endl;
 
 			
@@ -251,9 +253,13 @@ int main(int argc, char **argv){
 				recvfrom(file_descriptors[0].fd, udp_packet_buffer, BUFFER_SIZE, 0,
 						 (sockaddr *)&udp_client_address, &udp_client_length );
 
+				DumpData((uint8_t*)udp_packet_buffer, 50);
+
 				// if packet came from us, ignore it
 				if( !strcmp(&(udp_packet_buffer[10]), arguments[5].c_str()) ){
 					cout << "Received self broadcast." << endl;
+					cout << &(udp_packet_buffer[10]) << endl;
+					cout << arguments[5].c_str() << endl;
 					continue;
 				}
 
@@ -272,12 +278,18 @@ int main(int argc, char **argv){
 					udp_buffer_uint = theMessage.Data();
 					udp_buffer_size = theMessage.Length();
 					
+					// lookup user we just discovered and send to them
+					tempUser = discoveredUsers.accessUser(discoveredUsers.size() - 1);
+					udp::lookup_user(tempUser, &udp_server_address);
+
 					send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 						   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 					if(send_check < 0){
 						perror("Error in message send.");
 						exit(0);
 					}
+					bzero(udp_packet_buffer, BUFFER_SIZE);
+
 				}
 
 				// if packet is reply
@@ -286,6 +298,9 @@ int main(int argc, char **argv){
 					discoveredUsers.addUser(udp_packet_buffer);
 
 					cout << "Receieved reply message from " << &(udp_packet_buffer[10]) << endl;
+
+					bzero(udp_packet_buffer, BUFFER_SIZE);
+
 				}
 
 				// if packet is close
@@ -294,6 +309,9 @@ int main(int argc, char **argv){
 					discoveredUsers.removeUser(udp_packet_buffer);
 
 					cout << "Receieved closing message from " << &(udp_packet_buffer[10]) << endl;
+
+					bzero(udp_packet_buffer, BUFFER_SIZE);
+
 				}
 			} // end of udp revents
 
@@ -567,6 +585,7 @@ void set_noncanonical_mode(int fd, struct termios *savedattributes){
 void reset_noncanonical_mode(int fd, struct termios *savedattributes){
     tcsetattr(fd, TCSANOW, savedattributes);
 }
+
 
 
 
