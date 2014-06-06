@@ -1,6 +1,8 @@
 #include "p2pim_tcp.h"
 #include "p2pim_udp.h"
 #include "p2pim_user.h"
+#include "EncryptionLibrary.h"
+#include <sstream>
 #include <termios.h>
 
 
@@ -36,6 +38,7 @@ int main(int argc, char **argv){
 	// arrays of strings for arguments
 	std::string arguments[8];
 	std::string external_hosts[8];
+	char password[128];
 	sockaddr_in external_addresses[8];
 	int num_extern_hosts = 0;
 
@@ -83,6 +86,14 @@ int main(int argc, char **argv){
 	int userNum;
 	int tempSocketFD;
 
+	uint64_t nonce;
+
+	std::string username_pass;
+	uint64_t my_n;
+	uint64_t my_e;
+	uint64_t my_d;
+
+
 
 	if( (argc % 2) != 1){
 		// if flags and arguments dont come in pairs
@@ -90,6 +101,8 @@ int main(int argc, char **argv){
 		cout << "Sorry, it seems an argument was incorrectly formatted." << endl;
 		exit(0);
 	}
+
+	arguments[7] = "false";
 
 	parse_arguments(argc, argv, arguments, external_hosts, &num_extern_hosts);
 
@@ -119,6 +132,13 @@ int main(int argc, char **argv){
 
 	cout << num_extern_hosts << endl;
 
+	cout << "Enter a password: ";
+	scanf("%s", password);
+	cout << endl;
+
+	username_pass = arguments[0] + std::string(":") + std::string(password);
+
+	StringToPublicNED(username_pass.c_str(), my_n, my_e, my_d);
 
 	// initialize all sockets and add them to the fd array
 	udp::initialize(arguments, &udp_server_address, &udp_socket_fd, file_descriptors);
@@ -175,8 +195,6 @@ int main(int argc, char **argv){
 
 		udp_buffer_uint = theMessage.Data();
 		udp_buffer_size = theMessage.Length();
-
-
 	}
 	else{
 		cout << "Message create failed." << endl;
@@ -196,6 +214,48 @@ int main(int argc, char **argv){
     udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	cout << "Broadcasted." << endl;
+
+
+	// send out RAKM message
+
+	// create RAKM message
+	theMessage.Clear();
+	theMessage.AppendStringWithoutNULL("P2PI");
+	theMessage.AppendUInt16(0x10);
+	nonce = (GenerateRandomValue() & 0xFFFFFFFFULL);
+	PublicEncryptDecrypt(nonce, P2PI_TRUST_E, P2PI_TRUST_N);
+	theMessage.AppendUInt64(nonce);
+	theMessage.AppendString(arguments[0].c_str());
+
+	// setup socket
+	// and set server args
+	if( !strcmp(arguments[7].c_str(), "false") ){
+
+		udp_server_address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+		udp_server_address.sin_port = htons(atoi(arguments[6].c_str()));
+	}
+	else{
+
+		tempUser.hostname = arguments[7].c_str();
+		tempUser.udp_port = atoi(arguments[6].c_str());
+		udp::lookup_user(tempUser, &udp_server_address);
+
+	}
+
+	udp_buffer_uint = theMessage.Data();
+	udp_buffer_size = theMessage.Length();
+
+	send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
+		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
+	if(send_check < 0){
+		perror("Error in message send.");
+		exit(0);
+	}
+	// return udp socket to any addr
+    udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    cout << "the sent packet: " << endl;
+	DumpData((uint8_t*)udp_buffer_uint, udp_buffer_size);
 
 
 
@@ -227,6 +287,7 @@ int main(int argc, char **argv){
 				exit(EXIT_SUCCESS);
 			}
     		udp_server_address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+    		udp_server_address.sin_port = atoi(arguments[1].c_str());
 			send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 				   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 			if(send_check < 0){
@@ -235,8 +296,43 @@ int main(int argc, char **argv){
 			}
     		udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 			bzero(udp_packet_buffer, BUFFER_SIZE);
+			
+			// create RAKM message
+			theMessage.Clear();
+			theMessage.AppendStringWithoutNULL("P2PI");
+			theMessage.AppendUInt16(0x10);
+			nonce = (GenerateRandomValue() & 0xFFFFFFFFULL);
+			PublicEncryptDecrypt(nonce, P2PI_TRUST_E, P2PI_TRUST_N);
+			theMessage.AppendUInt64(nonce);
+			theMessage.AppendString(arguments[0].c_str());
 
-			// cout << "Broadcasted." << endl;
+			// setup socket
+			// and set server args
+			if( !strcmp(arguments[7].c_str(), "false") ){
+
+				udp_server_address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+				udp_server_address.sin_port = htons(atoi(arguments[6].c_str()));
+			}
+			else{
+
+				tempUser.hostname = arguments[7].c_str();
+				tempUser.udp_port = atoi(arguments[6].c_str());
+				udp::lookup_user(tempUser, &udp_server_address);
+
+			}
+
+			udp_buffer_uint = theMessage.Data();
+			udp_buffer_size = theMessage.Length();
+
+			send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
+				   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
+			if(send_check < 0){
+				perror("Error in message send.");
+				exit(0);
+			}
+			// return udp socket to any addr
+		    udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+
 
 			
 		}
@@ -315,6 +411,15 @@ int main(int argc, char **argv){
 					bzero(udp_packet_buffer, BUFFER_SIZE);
 
 				}
+
+				if( udp_packet_buffer[5] == 0x11 ){
+
+
+					cout << "Recieved AKRM" << endl;
+
+				}
+
+
 			} // end of udp revents
 
 
@@ -424,6 +529,7 @@ int main(int argc, char **argv){
 
 
 	udp_server_address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+	udp_server_address.sin_port = htons(atoi(arguments[1].c_str()));
 	send_check = sendto(udp_socket_fd, udp_buffer_uint, udp_buffer_size,
 		   0, (sockaddr *)&udp_server_address, sizeof(udp_server_address));
 	if(send_check < 0){

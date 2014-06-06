@@ -1,4 +1,4 @@
-PARGS=-u notNitta -up 40667 -tp 40692
+PARGS= -up 40667 -tp 40692
 
 all: p2pim
 
