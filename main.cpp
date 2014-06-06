@@ -87,13 +87,19 @@ int main(int argc, char **argv){
 	int tempSocketFD;
 
 	uint64_t nonce;
+	uint64_t old_nonce;
 
 	std::string username_pass;
 	uint64_t my_n;
 	uint64_t my_e;
 	uint64_t my_d;
 
+	uint64_t recv_nonce;
+	uint64_t recv_e; //public key
+	uint64_t recv_n; //modulus
+	uint16_t type;
 
+	uint64_t checksum;
 
 	if( (argc % 2) != 1){
 		// if flags and arguments dont come in pairs
@@ -118,19 +124,16 @@ int main(int argc, char **argv){
 
 
 
-	cout << arguments[0] << endl;
-	cout << arguments[1] << endl;
-	cout << arguments[2] << endl;
-	cout << arguments[3] << endl;
-	cout << arguments[4] << endl;
-	cout << arguments[5] << endl;
-	cout << arguments[6] << endl;
-	cout << arguments[7] << endl;
-
-	cout << external_hosts[0] << endl;
-	cout << external_hosts[1] << endl;
-
-	cout << num_extern_hosts << endl;
+	cout << "Username: " << arguments[0] << endl;
+	cout << "UDP Port: " << arguments[1] << endl;
+	cout << "TCP Port: " << arguments[2] << endl;
+	cout << "Min Timeout: " << arguments[3] << endl;
+	cout << "Max Timeout: " << arguments[4] << endl;
+	cout << "Hostname: " << arguments[5] << endl;
+	cout << "Trust Anchor Port: " << arguments[6] << endl;
+	cout << "Trust Anchor specified: " << arguments[7] << endl;
+	cout << endl;
+	cout << endl;
 
 	cout << "Enter a password: ";
 	scanf("%s", password);
@@ -223,6 +226,7 @@ int main(int argc, char **argv){
 	theMessage.AppendStringWithoutNULL("P2PI");
 	theMessage.AppendUInt16(0x10);
 	nonce = (GenerateRandomValue() & 0xFFFFFFFFULL);
+	old_nonce = nonce;
 	PublicEncryptDecrypt(nonce, P2PI_TRUST_E, P2PI_TRUST_N);
 	theMessage.AppendUInt64(nonce);
 	theMessage.AppendString(arguments[0].c_str());
@@ -254,9 +258,6 @@ int main(int argc, char **argv){
 	// return udp socket to any addr
     udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    cout << "the sent packet: " << endl;
-	DumpData((uint8_t*)udp_buffer_uint, udp_buffer_size);
-
 
 
 	while(1){
@@ -267,6 +268,8 @@ int main(int argc, char **argv){
 			if( !discoveredUsers.empty() ){
 				continue;
 			}
+
+			cout << endl;
 
 			cout << "Poll timed out with value " << timeout_val << endl;
 			// set new timeout val
@@ -296,12 +299,13 @@ int main(int argc, char **argv){
 			}
     		udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 			bzero(udp_packet_buffer, BUFFER_SIZE);
-			
+
 			// create RAKM message
 			theMessage.Clear();
 			theMessage.AppendStringWithoutNULL("P2PI");
 			theMessage.AppendUInt16(0x10);
 			nonce = (GenerateRandomValue() & 0xFFFFFFFFULL);
+			old_nonce = nonce;
 			PublicEncryptDecrypt(nonce, P2PI_TRUST_E, P2PI_TRUST_N);
 			theMessage.AppendUInt64(nonce);
 			theMessage.AppendString(arguments[0].c_str());
@@ -351,13 +355,9 @@ int main(int argc, char **argv){
 				recvfrom(file_descriptors[0].fd, udp_packet_buffer, BUFFER_SIZE, 0,
 						 (sockaddr *)&udp_client_address, &udp_client_length );
 
-				DumpData((uint8_t*)udp_packet_buffer, 50);
-
 				// if packet came from us, ignore it
 				if( !strcmp(&(udp_packet_buffer[10]), arguments[5].c_str()) ){
 					cout << "Received self broadcast." << endl;
-					cout << &(udp_packet_buffer[10]) << endl;
-					cout << arguments[5].c_str() << endl;
 					continue;
 				}
 
@@ -415,7 +415,44 @@ int main(int argc, char **argv){
 				if( udp_packet_buffer[5] == 0x11 ){
 
 
-					cout << "Recieved AKRM" << endl;
+					// decrypt and verify we got what we sent
+
+					theMessage.Clear();
+					theMessage.AppendData((uint8_t*)udp_packet_buffer, BUFFER_SIZE);
+					theMessage.ExtractStringN(temp_string, 4);
+					theMessage.ExtractUInt16(type);
+					theMessage.ExtractUInt64(recv_nonce);
+
+					theMessage.ExtractString(temp_string);
+					cout << "Username received: " << temp_string << endl;
+					theMessage.ExtractUInt64(recv_e);
+					theMessage.ExtractUInt64(recv_n);
+					theMessage.ExtractUInt64(checksum);
+
+					PublicEncryptDecrypt(recv_nonce, P2PI_TRUST_E, P2PI_TRUST_N);
+					PublicEncryptDecrypt(checksum, P2PI_TRUST_E, P2PI_TRUST_N);
+
+					cout << "Received nonce: " << recv_nonce << endl;
+					cout << "Last sent nonce: " << old_nonce << endl;
+					cout << "Received encryption key: " << recv_e << endl;
+					cout << "My calculated encryption key: " << my_e << endl;
+					cout << "Recieved modulus: " << recv_n << endl;
+					cout << "My calculated modulus: " << my_n << endl;
+					cout << "Recieved checksum: " << checksum << endl;
+					cout << "My Calculated checksum: " << AuthenticationChecksum(old_nonce, arguments[0].c_str(), my_e, my_n) << endl;
+
+					if( recv_nonce == old_nonce ){
+						cout << "The nonces matched!" << endl;
+					}
+					if( recv_e == my_e ){
+						cout << "The Encryption keys matched!" << endl;
+					}
+					if( recv_n == my_n ){
+						cout << "The moduli matched!" << endl;
+					}
+					if( checksum == AuthenticationChecksum(old_nonce, arguments[0].c_str(), my_e, my_n) ){
+						cout << "The Checksums matched!" << endl;
+					}
 
 				}
 
