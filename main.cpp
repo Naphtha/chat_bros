@@ -16,7 +16,7 @@ const char *DEFAULT_UDP = "50550";
 const char *DEFAULT_TCP = "50551";
 const char *DEFAULT_MIN_TIMEOUT = "5";
 const char *DEFAULT_MAX_TIMEOUT = "60"; 
-
+const char *DEFAULT_TRUST_ANCHOR = "50552";
 
 // forward declarations
 void parse_arguments(int argc, char **argv, std::string *arguments, std::string *external_hosts, int *num_hosts);
@@ -111,6 +111,8 @@ int main(int argc, char **argv){
 	cout << arguments[3] << endl;
 	cout << arguments[4] << endl;
 	cout << arguments[5] << endl;
+	cout << arguments[6] << endl;
+	cout << arguments[7] << endl;
 
 	cout << external_hosts[0] << endl;
 	cout << external_hosts[1] << endl;
@@ -469,6 +471,9 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 	char Buffer[BUFFER_SIZE];
 	char name[BUFFER_SIZE];
     struct hostent *LocalHostEntry;
+    int parse_check = 0;
+    std::string temp_string;
+    unsigned int string_pos;
 
 	// set default arguments and then overwrite them
 
@@ -483,6 +488,7 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 	arguments[2] = DEFAULT_TCP;
 	arguments[3] = DEFAULT_MIN_TIMEOUT;
 	arguments[4] = DEFAULT_MAX_TIMEOUT;
+	arguments[6] = DEFAULT_TRUST_ANCHOR;
 
     if(-1 == gethostname(Buffer, 255)){
     	perror("Hostname get failed.");
@@ -532,6 +538,23 @@ void parse_arguments(int argc, char **argv, std::string *arguments, std::string 
 			(*num_hosts)++;
 		}
 		else if( !strcmp(argv[i], "-ap") ){
+			if( parse_check == 0 ){
+				arguments[6] = argv[i+1];
+			}
+
+		}
+		else if( !strcmp(argv[i], "-ah") ){
+
+			temp_string = argv[i+1];
+			if( std::string::npos != temp_string.find(':') ){
+				parse_check = 1;
+				string_pos = temp_string.find(':');
+				arguments[7] = temp_string.substr(0, string_pos);
+				arguments[6] = temp_string.substr(string_pos+1);
+			}else{
+
+				arguments[7] = temp_string;
+			}
 
 		}
 		else{

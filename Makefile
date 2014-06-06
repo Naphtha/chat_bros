@@ -2,8 +2,8 @@ PARGS=-u notNitta -up 40667 -tp 40692
 
 all: p2pim
 
-p2pim: p2pim_udp.o p2pim_tcp.o message.o p2pim_user.o main.o
-	g++ -o p2pim main.o p2pim_udp.o p2pim_tcp.o message.o p2pim_user.o
+p2pim: p2pim_udp.o p2pim_tcp.o message.o p2pim_user.o encryption.o main.o
+	g++ -o p2pim main.o p2pim_udp.o p2pim_tcp.o message.o p2pim_user.o EncryptionLibrary.o
 
 
 
@@ -22,6 +22,10 @@ message.o: message.cpp
 
 user.o: p2pim_user.cpp
 	g++ -c -Wall p2pim_user.cpp
+
+encryption.o: EncryptionLibrary.cpp
+	g++ -c -Wall EncryptionLibrary.cpp
+
 
 
 
