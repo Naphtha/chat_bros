@@ -38,6 +38,13 @@ run:
 runtester:
 	./p2pimtester -up 40667 -tp 40692
 
+runanchor:
+	./p2pitrust
+
+adduser:
+	@echo "Type the password: asdf"
+	./p2pisetauth
+
 retest:
 	make clean
 	make p2pim
